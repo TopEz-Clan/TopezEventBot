@@ -1,25 +1,11 @@
 using System.Reflection;
 using Discord;
 using TopezEventBot.Http.Models;
+using TopezEventBot.Modules.WildyWednesday;
 using TopezEventBot.Util.Extensions;
 
 namespace TopezEventBot.Util;
 public class EmbedGenerator {
-    // private static EmbedData extractEmbedData(String key, String[][] data) {
-    //     String tempSkillName = null;
-    //     String tempThumbnailUrl = null;
-    //     String tempBannerUrl = null;
-    //
-    //     for (String[] datum : data) {
-    //         if (key.equalsIgnoreCase(datum[0])) {
-    //             tempSkillName = datum[0];
-    //             tempThumbnailUrl = datum[1];
-    //             tempBannerUrl = datum[2];
-    //             break;
-    //         }
-    //     }
-    //     return new EmbedData(tempSkillName, tempThumbnailUrl, tempBannerUrl);
-    // }
 
     private static Embed Generate(string title, string description, HiscoreField data, EmbedFooterBuilder footer, params EmbedFieldBuilder[] fields)
     {
@@ -49,19 +35,19 @@ public class EmbedGenerator {
     }
 
     
-    // public static EmbedCreateSpec WildyWednesday(HiscoreField activity, String location, String startTime) {
-    //     var description = "As always, *REACT* to this post if you're planning on coming so we have an idea on how many members are joining.";
-    //     var title = "Wildy Wednesday - " + activity.name();
-    //     var footer = EmbedCreateFields.Footer.of("For non-pkers: Toggle PK Skull Prevention in settings! Only risk what you can afford to lose.", Constants.INFORMATIONAL_FOOTER_LOGO_URL);
-    //     var fields = new EmbedCreateFields.Field[]{
-    //             EmbedCreateFields.Field.of("This week's boss:", Misc.capitalize(activity.name()), true),
-    //             EmbedCreateFields.Field.of("Where to meet:", "*" + location + "*", true),
-    //             EmbedCreateFields.Field.of("Event Start:", "*Wednesday @ " + startTime + " UTC*", true),
-    //             EmbedCreateFields.Field.of("Splitting Rules:", "Only split voidwaker pieces, the rest is FFA", false),
-    //     };
-    //
-    //     return Generate(title, description, activity, footer, fields);
-    // }
+    public static Embed WildyWednesday(HiscoreField activity, String location, String startTime) {
+        var description = "As always, *REACT* to this post if you're planning on coming so we have an idea on how many members are joining.";
+        var title = $"Wildy Wednesday - {activity.GetDisplayName()}";
+        var footer = new EmbedFooterBuilder { Text = "For non-pkers: Toggle PK Skull Prevention in settings! Only risk what you can afford to lose.",  IconUrl = Constants.INFORMATIONAL_FOOTER_LOGO_URL };
+        var fields = new EmbedFieldBuilder[]{
+                Field("This week's boss:", activity.GetDisplayName(), true),
+                Field("Where to meet:", "*" + location + "*", true),
+                Field("Event Start:", "*Wednesday @ " + startTime + " UTC*", true),
+                Field("Splitting Rules:", "Only split voidwaker pieces, the rest is FFA", false),
+        };
+    
+        return Generate(title, description, activity, footer, fields);
+    }
     //
     // public static EmbedCreateSpec Mass(String location, String startTime) {
     //     var title = "Sunday Corp Mass";

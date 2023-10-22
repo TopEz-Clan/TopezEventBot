@@ -2,7 +2,7 @@ using Discord;
 using Discord.Interactions;
 using TopezEventBot.Util;
 
-namespace TopezEventBot.Modules;
+namespace TopezEventBot.Modules.SkillOfTheWeek;
 
 public class SkillOfTheWeekModule : InteractionModuleBase<SocketInteractionContext>
 {

@@ -166,4 +166,38 @@ public enum HiscoreField {
     Zalcano,
     [Lookup( "Zulrah", "https://i.imgur.com/RuLHQEk.png", "https://i.imgur.com/lZ6Soqq.jpeg" )]
     Zulrah,
+
+    
+    
+    // CAVE: Those do *NOT* belong to the official RS api
+    
+    [Lookup(  "Barbarian Assault", "https://i.imgur.com/OQQnHXE.jpg", "https://i.imgur.com/a0yvM7b.png"  )]
+    BA,
+    [Lookup(  "Burthorpe Games Room", "https://i.imgur.com/CAb6n5J.jpg", "https://i.imgur.com/r3hMrOM.png"  )]
+    BURTHOPE_GAMES_ROOM,
+    [Lookup(  "Castle Wars", "https://i.imgur.com/UFyjmLe.png", "https://i.imgur.com/hYE4Vc4.png"  )]
+    CASTLE_WARS,
+    [Lookup(  "Clan Wars", "https://i.imgur.com/T6eAUO0.jpg", "https://i.imgur.com/jRAtjyC.png"  )]
+    CLAN_WARS,
+    [Lookup(  "PvP Arena Tournament", "https://i.imgur.com/ICR7HE2.jpg", "https://i.imgur.com/9s6oHNz.png"  )]
+    PVP_ARENA,
+    [Lookup(  "Pyramid Plunder", "https://i.imgur.com/NkIYKpZ.jpg", "https://i.imgur.com/4K74cvz.png"  )]
+    PYRAMID_PLUNDER,
+    [Lookup(  "Soul Wars", "https://i.imgur.com/lDiP9pJ.png", "https://i.imgur.com/GnzbipF.png"  )]
+    SOUL_WARS,
+    [Lookup(  "Trouble Brewing", "https://i.imgur.com/3QitXMa.jpg", "https://i.imgur.com/LLtdSqW.png"  )]
+    TROUBLE_BREWING,
+    [Lookup(  "TzHaar Fight Pit", "https://i.imgur.com/DsWnOVC.jpg", "https://i.imgur.com/cx2FWlF.png"  )]
+    FIGHT_PIT,
+    [Lookup(  "Volcanic Mine", "https://i.imgur.com/vCbE5X1.png", "https://i.imgur.com/fa9CZ9k.png"  )]
+    VOLCANIC_MINE,
+
+    [Lookup("Revenants", "https://i.imgur.com/B2Gw2Uq.png", "https://i.imgur.com/qQjqt6x.png")]
+    Revenants,
+    [Lookup("Clan PKing", "https://i.imgur.com/B2Gw2Uq.png", "https://i.imgur.com/qQjqt6x.png" )]
+    ClanPking,
+
+
+
+
 }

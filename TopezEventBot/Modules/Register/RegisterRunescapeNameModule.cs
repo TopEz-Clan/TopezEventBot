@@ -36,7 +36,6 @@ public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteracti
     [ComponentInteraction("confirm-rsn-button")]
     public async Task ConfirmUsernameButton()
     {
-        var initial = await Context.Interaction.GetOriginalResponseAsync();
         await Context.Interaction.RespondAsync("Success!");
     }
     
