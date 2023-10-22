@@ -1,5 +1,7 @@
 using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
+using TopezEventBot.Data.Context;
 using TopezEventBot.Http;
 using TopezEventBot.Util;
 
@@ -8,6 +10,7 @@ namespace TopezEventBot.Modules;
 public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IRunescapeHiscoreHttpClient _client;
+    // private readonly TopezContext _db;
 
     public RegisterRunescapeNameModule(IRunescapeHiscoreHttpClient client)
     {
@@ -28,15 +31,16 @@ public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteracti
         var rsn = modal.AccountName;
         var player = await _client.LoadPlayer(rsn);
         var componentBuilder = new ComponentBuilder()
-            .WithButton("That's me", "confirm-rsn-button", ButtonStyle.Success)
+            .WithButton("That's me", $"confirm-rsn-button:{rsn}", ButtonStyle.Success)
             .WithButton("Nope, not me!", "not-me-button", ButtonStyle.Danger);
+        
         await RespondAsync(embed: EmbedGenerator.Player(player), text: "Is this you?", components: componentBuilder.Build());
     }
 
-    [ComponentInteraction("confirm-rsn-button")]
-    public async Task ConfirmUsernameButton()
+    [ComponentInteraction("confirm-rsn-button:*")]
+    public async Task ConfirmUsernameButton(string rsn)
     {
-        await Context.Interaction.RespondAsync("Success!");
+        await Context.Interaction.RespondAsync($"So you're {rsn}!");
     }
     
     [ComponentInteraction("not-me-button")]

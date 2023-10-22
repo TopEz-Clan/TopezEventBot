@@ -16,6 +16,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         {
             client.BaseAddress = new Uri("https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws");
         });
+        
         services.AddDbContext<TopezContext>(opts => opts.UseSqlite($"Data Source={Util.DbPath()}"));
     })
     .Build();
