@@ -21,4 +21,16 @@ IHost host = Host.CreateDefaultBuilder(args)
     })
     .Build();
 
+
+await UpdateDatabase(host);
+
+
 host.Run();
+return;
+
+async Task UpdateDatabase(IHost host)
+{
+    using var scope = host.Services.CreateScope();
+    var ctx = scope.ServiceProvider.GetService<TopezContext>();
+    await ctx?.Database.MigrateAsync();
+}

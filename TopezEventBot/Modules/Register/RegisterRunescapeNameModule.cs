@@ -2,6 +2,7 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using TopezEventBot.Data.Context;
+using TopezEventBot.Data.Model;
 using TopezEventBot.Http;
 using TopezEventBot.Util;
 
@@ -10,18 +11,27 @@ namespace TopezEventBot.Modules;
 public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IRunescapeHiscoreHttpClient _client;
-    // private readonly TopezContext _db;
+    private readonly IServiceProvider _provider;
 
-    public RegisterRunescapeNameModule(IRunescapeHiscoreHttpClient client)
+    public RegisterRunescapeNameModule(IRunescapeHiscoreHttpClient client, IServiceProvider provider)
     {
         _client = client;
+        _provider = provider;
     }
 
     [SlashCommand("link-rsn", "Link your runescape name!")]
     [RequireUserPermission(GuildPermission.KickMembers)]
     public async Task RegisterRunescapeName()
     {
-        await Context.Interaction.RespondWithModalAsync<RegisterRunescapeNameModal>("link_rsn_modal");
+        using var scope = _provider.CreateScope();
+        await using var ctx = scope.ServiceProvider.GetService<TopezContext>();
+        var memberId = Context.User.Id;
+        var accountLinked = ctx.AccountLinks.Any(x => x.DiscordMemberId == memberId);
+
+        if (accountLinked)
+            await Context.Interaction.RespondAsync("You already got a linked account!");
+        else
+            await Context.Interaction.RespondWithModalAsync<RegisterRunescapeNameModal>("link_rsn_modal");
     }
 
 
@@ -40,7 +50,15 @@ public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteracti
     [ComponentInteraction("confirm-rsn-button:*")]
     public async Task ConfirmUsernameButton(string rsn)
     {
-        await Context.Interaction.RespondAsync($"So you're {rsn}!");
+        using var scope = _provider.CreateScope();
+        var ctx = scope.ServiceProvider.GetService<TopezContext>();
+        var member = Context.User.Id;
+        ctx?.AccountLinks.Add(new AccountLink { DiscordMemberId = member, RunescapeName = rsn});
+        var count = await ctx.SaveChangesAsync();
+        if (count > 0)
+            await Context.Interaction.RespondAsync($"Account {rsn} successfully linked!");
+        else
+            await Context.Interaction.RespondAsync("Problem while linking account!");
     }
     
     [ComponentInteraction("not-me-button")]
