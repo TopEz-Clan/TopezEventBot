@@ -13,4 +13,8 @@
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1"/>
         <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0-rc.2.23479.6" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\TopezEventBot.Data\TopezEventBot.Data.csproj" />
+    </ItemGroup>
 </Project>
