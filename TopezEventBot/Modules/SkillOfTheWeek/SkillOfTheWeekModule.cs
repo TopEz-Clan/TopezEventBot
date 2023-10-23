@@ -1,17 +1,29 @@
 using Discord;
 using Discord.Interactions;
+using TopezEventBot.Data.Entities;
+using TopezEventBot.Http;
 using TopezEventBot.Util;
 
 namespace TopezEventBot.Modules.SkillOfTheWeek;
 
-public class SkillOfTheWeekModule : InteractionModuleBase<SocketInteractionContext>
+[Group("sotw", "All skill of the week related commands")]
+public class SkillOfTheWeekModule : TrackableEventModuleBase
 {
-    
-    [SlashCommand("start-sotw", "Start skill of the week!")]
-    [RequireUserPermission(GuildPermission.KickMembers)]
-    public async Task StartSkillOfTheWeek(SkillOfTheWeekChoice sotw, string codePhrase)
+    public SkillOfTheWeekModule(IServiceScopeFactory scopeFactory, IRunescapeHiscoreHttpClient rsClient) : base(scopeFactory, rsClient, EventType.SkillOfTheWeek)
     {
-        await RespondAsync(embed: EmbedGenerator.SkillOfTheWeek((HiscoreField)sotw, codePhrase));
     }
     
+    [SlashCommand("start", "Start skill of the week!")]
+    [RequireUserPermission(GuildPermission.KickMembers)]
+    public async Task StartSkillOfTheWeek(SkillOfTheWeekChoice sotw, bool isActive = true)
+    {
+        await StartEvent((HiscoreField)sotw, isActive);
+    }
+
+    [ComponentInteraction("register-for-sotw:*,*", ignoreGroupNames:true)]
+    public async Task RegisterForSotw(string eventIdAsString, string threadIdAsString)
+    {
+        await base.RegisterForEvent(eventIdAsString, threadIdAsString);
+    }
+
 }

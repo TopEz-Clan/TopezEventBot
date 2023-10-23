@@ -13,9 +13,3 @@ public class Event
     
     public bool IsActive { get; set; }
 }
-
-public enum EventType
-{
-    BossOfTheWeek, 
-    SkillOfTheWeek
-}

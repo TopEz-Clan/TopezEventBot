@@ -1,5 +1,6 @@
 using System.Reflection;
 using Discord;
+using TopezEventBot.Data.Entities;
 using TopezEventBot.Http.Models;
 using TopezEventBot.Modules.WildyWednesday;
 using TopezEventBot.Util.Extensions;
@@ -68,12 +69,11 @@ public class EmbedGenerator {
         return new EmbedFieldBuilder { IsInline = inline, Name = name, Value = value };
     }
     
-    public static Embed SkillOfTheWeek(HiscoreField skill, String codeWord) {
+    public static Embed SkillOfTheWeek(HiscoreField skill) {
         var title = $"Skill of the Week - {skill.GetDisplayName()}";
         var description = "As always, the 1st place winner of the competition will receive a prize, as well as a temporary in-game rank. Be sure to post a screenshot below containing the code-word and your start exp in the skill! This event will last a week, so good luck!";
         var fields = new EmbedFieldBuilder[] {
                 Field("This week's skill:", skill.GetDisplayName(), true) ,
-                Field("This week's code-word:", $"*{codeWord}*",  true) ,
                 Field("Prize:", "A bond for ironmen, or GP equivalent for a main account", false) ,
         };
         
@@ -103,5 +103,18 @@ public class EmbedGenerator {
         var fields = player.Skills.Select(skill => new EmbedFieldBuilder { IsInline = true, Name = skill.Key.ToString(), Value = skill.Value.Level }).ToList();
 
         return Generate(title, description, HiscoreField.Prayer, footer, fields.ToArray());
+    }
+    
+    public static Embed EventWinner(EventType type, HiscoreField activity, IOrderedEnumerable<EventResult> winners) {
+        var title = $"Winner of this Weeks {type.GetDisplayName()} - @{winners.FirstOrDefault().RunescapeName}";
+        var description = "As always, the 1st place winner of the competition will receive a prize, as well as a temporary in-game rank";
+        var footer = new EmbedFooterBuilder
+        {
+            Text = "Congratulation! Hit up the Mod Team to claim your price",
+           IconUrl = Constants.INFORMATIONAL_FOOTER_LOGO_URL,
+        };
+        var idx = 0;
+
+        return Generate(title, description, activity, footer, winners.Select(winner => new EmbedFieldBuilder() { IsInline = false, Name = idx < 3 ? $"{++idx}. Place" : throw new ArgumentException(), Value = $"{winner.RunescapeName} - {winner.Progress} {type.Unit()}" }).ToArray());
     }
 }
