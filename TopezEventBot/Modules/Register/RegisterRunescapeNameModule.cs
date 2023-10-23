@@ -3,7 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using TopezEventBot.Data.Context;
-using TopezEventBot.Data.Model;
+using TopezEventBot.Data.Entities;
 using TopezEventBot.Http;
 using TopezEventBot.Util;
 

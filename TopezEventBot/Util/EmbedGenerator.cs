@@ -81,13 +81,12 @@ public class EmbedGenerator {
         return Generate(title, description, skill, footer, fields);
     }
     //
-    public static Embed BossOfTheWeek(HiscoreField boss, String codeWord) {
+    public static Embed BossOfTheWeek(HiscoreField boss) {
         var title = $"Boss of the Week - {boss.GetDisplayName()}";
         var description = "As always, the 1st place winner of the competition will receive a prize, as well as a temporary in-game rank. Be sure to post a screenshot below including the code-word as well as your starting killcount! (Found in the collection log)";
         var footer = new EmbedFooterBuilder { Text = "Be sure to include the code-word in your starting screenshot or you will not be eligible to win!", IconUrl = Constants.INFORMATIONAL_FOOTER_LOGO_URL };
         var fields = new EmbedFieldBuilder[] {
                 Field("This week's boss:", boss.GetDisplayName(), true),
-                Field("The code-word:", $"*{codeWord}*", true),
                 Field("Prize:", "A bond for ironmen, or the GP equivalent for a main account", false),
         };
         return Generate(title, description, boss, footer, fields);

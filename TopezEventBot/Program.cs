@@ -2,6 +2,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using TopezEventBot;
+using TopezEventBot.Data;
 using TopezEventBot.Data.Context;
 using TopezEventBot.Http;
 

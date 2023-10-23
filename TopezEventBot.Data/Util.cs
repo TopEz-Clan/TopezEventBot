@@ -1,4 +1,4 @@
-namespace TopezEventBot.Data.Context;
+namespace TopezEventBot.Data;
 
 public static class Util
 {
@@ -8,5 +8,4 @@ public static class Util
         var path = Environment.GetFolderPath(folder);
         return Path.Join(path, "topez.db");
     }
-    
 }

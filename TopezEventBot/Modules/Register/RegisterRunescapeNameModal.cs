@@ -9,6 +9,6 @@ public class RegisterRunescapeNameModal : IModal
     
     [InputLabel("Account Name")]
     [RequiredInput]
-    [ModalTextInput("accout_name")]
+    [ModalTextInput("account_name")]
     public string AccountName { get; set; }
 }

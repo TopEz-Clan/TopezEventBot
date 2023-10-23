@@ -1,4 +1,6 @@
-namespace TopezEventBot.Util;
+using TopezEventBot.Util;
+
+namespace TopezEventBot.Modules.SkillOfTheWeek;
 
 public enum SkillOfTheWeekChoice
 {
