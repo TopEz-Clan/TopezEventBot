@@ -9,7 +9,7 @@ namespace TopezEventBot.Modules.SkillOfTheWeek;
 [Group("sotw", "All skill of the week related commands")]
 public class SkillOfTheWeekModule : TrackableEventModuleBase
 {
-    public SkillOfTheWeekModule(IServiceScopeFactory scopeFactory, IRunescapeHiscoreHttpClient rsClient) : base(scopeFactory, rsClient, EventType.SkillOfTheWeek)
+    public SkillOfTheWeekModule(IServiceScopeFactory scopeFactory, IRunescapeHiscoreHttpClient rsClient) : base(scopeFactory, rsClient, TrackableEventType.SkillOfTheWeek)
     {
     }
     

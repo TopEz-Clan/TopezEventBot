@@ -4,19 +4,19 @@ namespace TopezEventBot.Util.Extensions;
 
 public static class EventTypeExtensions
 {
-    public static string GetDisplayName(this EventType type) => type switch
+    public static string GetDisplayName(this TrackableEventType type) => type switch
     {
-        EventType.BossOfTheWeek => "Boss of the Week",
-        EventType.SkillOfTheWeek => "Skill of the Week",
+        TrackableEventType.BossOfTheWeek => "Boss of the Week",
+        TrackableEventType.SkillOfTheWeek => "Skill of the Week",
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
     };
 
-    public static string Unit(this EventType type) => type switch
+    public static string Unit(this TrackableEventType type) => type switch
     {
-        EventType.BossOfTheWeek => "kc",
-        EventType.SkillOfTheWeek => "xp",
+        TrackableEventType.BossOfTheWeek => "kc",
+        TrackableEventType.SkillOfTheWeek => "xp",
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
     };
 
-    public static string EventButtonTag(this EventType type, long eventId, ulong threadId) => $"register-for-{type switch { EventType.BossOfTheWeek => "botw", EventType.SkillOfTheWeek => "sotw", _ => throw new ArgumentOutOfRangeException(nameof(type), type, null) }}:{eventId},{threadId}";
+    public static string EventButtonTag(this TrackableEventType type, long eventId, ulong threadId) => $"register-for-{type switch { TrackableEventType.BossOfTheWeek => "botw", TrackableEventType.SkillOfTheWeek => "sotw", _ => throw new ArgumentOutOfRangeException(nameof(type), type, null) }}:{eventId},{threadId}";
 }

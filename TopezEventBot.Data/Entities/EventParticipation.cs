@@ -3,7 +3,7 @@
 public class EventParticipation
 {
     public long EventId { get; set; }
-    public Event Event { get; set; }
+    public TrackableEvent Event { get; set; }
     public long AccountLinkId { get; set; }
     public AccountLink AccountLink { get; set; }
 

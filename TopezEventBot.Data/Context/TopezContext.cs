@@ -6,7 +6,9 @@ namespace TopezEventBot.Data.Context;
 public class TopezContext : DbContext
 {
    public DbSet<AccountLink> AccountLinks { get; set; }
-   public DbSet<Event> Events { get; set; }
+   public DbSet<TrackableEvent> TrackableEvents { get; set; }
+   
+   public DbSet<SchedulableEvent> SchedulableEvents { get; set; }
    public DbSet<GuildWarningChannel> GuildWarningChannels { get; set; }
    public DbSet<Warning> Warnings { get; set; }
    
@@ -16,9 +18,9 @@ public class TopezContext : DbContext
 
    protected override void OnModelCreating(ModelBuilder modelBuilder)
    {
-    modelBuilder.Entity<Event>()
+    modelBuilder.Entity<TrackableEvent>()
         .HasMany(e => e.Participants)
-        .WithMany(e => e.Events)
+        .WithMany(e => e.TrackableEvents)
         .UsingEntity<EventParticipation>();
    }
 

@@ -1,7 +1,7 @@
 namespace TopezEventBot.Data.Entities;
 
-public enum EventType
+public enum TrackableEventType
 {
     BossOfTheWeek, 
-    SkillOfTheWeek
+    SkillOfTheWeek,
 }

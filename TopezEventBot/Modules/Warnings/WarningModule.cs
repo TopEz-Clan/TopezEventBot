@@ -27,7 +27,7 @@ public class WarningModule : InteractionModuleBase<SocketInteractionContext>
     public async Task SetWarningChannel(IChannel channel)
     {
         using var scope = _scopeFactory.CreateScope();
-        await using var db = scope.ServiceProvider.GetService<TopezContext>();
+        await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
         var guildId = Context.Guild.Id;
         var channelByGuild = await db.GuildWarningChannels.FirstOrDefaultAsync(x => x.GuildId == guildId);
         if (channelByGuild == null)
@@ -53,7 +53,7 @@ public class WarningModule : InteractionModuleBase<SocketInteractionContext>
     public async Task HandleModal(string userIdAsString, WarningModal modal)
     {
         using var scope = _scopeFactory.CreateScope();
-        await using var db = scope.ServiceProvider.GetService<TopezContext>();
+        await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
         var userId = ulong.Parse(userIdAsString);
 
         db.Warnings.Add(new Warning()
@@ -90,7 +90,7 @@ public class WarningModule : InteractionModuleBase<SocketInteractionContext>
         var componentBuilder = new ComponentBuilder().AddRow(new ActionRowBuilder().WithButton( "Clear warnings",$"clear-warnings-btn:{userToWarn.Id}", ButtonStyle.Success));
         var channel = Context.Guild.GetTextChannel(warningChannel.WarningChannelId)
             .SendMessageAsync(BuildWarningMessage(warnings, userToWarn), components: componentBuilder.Build());
-        await RespondAsync("The mod team has been informed!", ephemeral: true);
+        await RespondAsync("The mod team has been notified!", ephemeral: true);
     }
 
     [ComponentInteraction("clear-warnings-btn:*")]
@@ -134,7 +134,7 @@ public class WarningModule : InteractionModuleBase<SocketInteractionContext>
         var idx = 0;
         msg =
             $"{warnings.Aggregate(msg, (current, w) => current + $"{++idx}. by {MentionUtils.MentionUser(w.WarnedBy)} - {w.Reason}\n")}\n";
-        msg += "If you want to clear the user of his warnings, use the command ```/clear-user-warnings```";
+        msg += "If you want to clear the user of his warnings, use the command ```/clear-user-warnings <userName> or the button below!```";
         return msg;
     }
 }

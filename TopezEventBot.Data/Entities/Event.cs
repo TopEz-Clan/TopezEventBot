@@ -3,13 +3,10 @@ using TopezEventBot.Util;
 
 namespace TopezEventBot.Data.Entities;
 
-public class Event
+public abstract class Event<TType> where TType : Enum
 {
     public long Id { get; set; }
-    public EventType Type { get; set; }
-    public Collection<EventParticipation> EventParticipations { get; set; } = new();
+    public TType Type { get; set; }
     public Collection<AccountLink> Participants { get; set; } = new();
     public HiscoreField Activity { get; set; }
-    
-    public bool IsActive { get; set; }
 }

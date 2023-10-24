@@ -15,9 +15,9 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IRunescapeHiscoreHttpClient _rsClient;
-    private readonly EventType _type;
+    private readonly TrackableEventType _type;
 
-    protected TrackableEventModuleBase(IServiceScopeFactory scopeFactory, IRunescapeHiscoreHttpClient rsClient, EventType type)
+    protected TrackableEventModuleBase(IServiceScopeFactory scopeFactory, IRunescapeHiscoreHttpClient rsClient, TrackableEventType type)
     {
         _scopeFactory = scopeFactory;
         _rsClient = rsClient;
@@ -26,9 +26,9 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
 
     protected async Task RegisterForEvent(string eventIdAsString, string threadIdAsString) {
         await using var scope = _scopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetService<TopezContext>();
+        await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
         var eventId = long.Parse(eventIdAsString);
-        var @event = db.Events.FirstOrDefault(e => e.Id == eventId);
+        var @event = db.TrackableEvents.FirstOrDefault(e => e.Id == eventId);
         if (@event == null) {
             await RespondAsync("It seems this event has been deleted, please contact the Coordinator team", ephemeral: true);
             return;
@@ -54,8 +54,8 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
                 AccountLink = linkedAccount,
                 StartingPoint = _type switch
                 {
-                    EventType.BossOfTheWeek => player.Bosses[@event.Activity].KillCount,
-                    EventType.SkillOfTheWeek => player.Skills[@event.Activity].Experience,
+                    TrackableEventType.BossOfTheWeek => player.Bosses[@event.Activity].KillCount,
+                    TrackableEventType.SkillOfTheWeek => player.Skills[@event.Activity].Experience,
                     _ => throw new ArgumentOutOfRangeException()
                 }
             });
@@ -69,10 +69,10 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         }
         
         var threadId = ulong.Parse(threadIdAsString);
-        var eventType = _type switch { EventType.BossOfTheWeek => "Boss", EventType.SkillOfTheWeek => "Skill", _ => throw new ArgumentOutOfRangeException(nameof(_type), _type, null) };
+        var eventType = _type switch { TrackableEventType.BossOfTheWeek => "Boss", TrackableEventType.SkillOfTheWeek => "Skill", _ => throw new ArgumentOutOfRangeException(nameof(_type), _type, null) };
         var startProgress = _type switch {
-            EventType.BossOfTheWeek => $"{player.Bosses[@event.Activity].KillCount} KC",
-            EventType.SkillOfTheWeek => $"{player.Skills[@event.Activity].Experience} XP",
+            TrackableEventType.BossOfTheWeek => $"{player.Bosses[@event.Activity].KillCount} KC",
+            TrackableEventType.SkillOfTheWeek => $"{player.Skills[@event.Activity].Experience} XP",
             _ => throw new ArgumentOutOfRangeException(nameof(_type), _type, "Unknown activity type") };
         var message = $"Registered {player.UserName} for {eventType} {@event.Activity.GetDisplayName()} with *{startProgress}*";
         await Context.Guild.ThreadChannels.FirstOrDefault(x => x.Id == threadId)?.SendMessageAsync(message)!;
@@ -83,16 +83,16 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
     public async Task FinishEvent()
     {
         await using var scope = _scopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetService<TopezContext>();
+        await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
 
-        var lastActiveEvent = db.Events.Where(x => x.Type == _type)
+        var lastActiveEvent = db.TrackableEvents.Where(x => x.Type == _type)
             .Include(x => x.EventParticipations)
             .ThenInclude(p => p.AccountLink)
             .OrderByDescending(x => x.Id)
             .FirstOrDefault();
         
         lastActiveEvent.IsActive = false;
-        db.Events.Update(lastActiveEvent);
+        db.TrackableEvents.Update(lastActiveEvent);
         
         var participants = lastActiveEvent.EventParticipations;
         if (!participants.Any()) {
@@ -105,8 +105,8 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
             var player = await _rsClient.LoadPlayer(p.AccountLink.RunescapeName);
             p.EndPoint = _type switch
             {
-                EventType.BossOfTheWeek => player.Bosses[lastActiveEvent.Activity].KillCount,
-                EventType.SkillOfTheWeek => player.Skills[lastActiveEvent.Activity].Experience,
+                TrackableEventType.BossOfTheWeek => player.Bosses[lastActiveEvent.Activity].KillCount,
+                TrackableEventType.SkillOfTheWeek => player.Skills[lastActiveEvent.Activity].Experience,
                 _ => throw new ArgumentOutOfRangeException(nameof(_type), _type, null)
             };
         }
@@ -126,26 +126,26 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
     protected async Task StartEvent(HiscoreField activity, bool isActive = true)
     {
         await using var scope = _scopeFactory.CreateAsyncScope();
-        await using var ctx = scope.ServiceProvider.GetService<TopezContext>();
+        await using var ctx = scope.ServiceProvider.GetRequiredService<TopezContext>();
         var eventId = await ctx.CreateEvent(_type, activity, isActive);
         var componentBuilder = new ComponentBuilder();
         var threadId = await NewThreadInCurrentChannelAsync(activity, _type);
         var eventAbbrev = _type switch
         {
-            EventType.BossOfTheWeek => "botw",
-            EventType.SkillOfTheWeek => "sotw",
+            TrackableEventType.BossOfTheWeek => "botw",
+            TrackableEventType.SkillOfTheWeek => "sotw",
             _ => throw new ArgumentOutOfRangeException()
         };
         
         componentBuilder.AddRow(new ActionRowBuilder().WithButton("Register",$"register-for-{eventAbbrev}:{eventId},{threadId}", ButtonStyle.Success));
         await RespondAsync(embed: _type switch {
-            EventType.BossOfTheWeek => EmbedGenerator.BossOfTheWeek(activity),
-            EventType.SkillOfTheWeek => EmbedGenerator.SkillOfTheWeek(activity),
+            TrackableEventType.BossOfTheWeek => EmbedGenerator.BossOfTheWeek(activity),
+            TrackableEventType.SkillOfTheWeek => EmbedGenerator.SkillOfTheWeek(activity),
             _ => throw new ArgumentOutOfRangeException()
         }, components: isActive ? componentBuilder.Build() : null);
     }
 
-    private async Task<ulong> NewThreadInCurrentChannelAsync(HiscoreField activity, EventType type)
+    private async Task<ulong> NewThreadInCurrentChannelAsync(HiscoreField activity, TrackableEventType type)
     {
         var channel = Context.Channel as ITextChannel;
         var newThread = await channel.CreateThreadAsync(
@@ -164,10 +164,10 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
     public async Task Leaderboard()
     {
         await using var scope = _scopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetService<TopezContext>();
+        await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
         
         var playerScores = new Dictionary<string, int>();
-        var events = db.Events.Where(x => x.Type == _type).Include(x => x.EventParticipations).ThenInclude(x => x.AccountLink);
+        var events = db.TrackableEvents.Where(x => x.Type == _type).Include(x => x.EventParticipations).ThenInclude(x => x.AccountLink);
         foreach (var @event in events.Where(x => x.EventParticipations.Any()))
         {
             var winner = @event.EventParticipations.ToList().Select(x => new

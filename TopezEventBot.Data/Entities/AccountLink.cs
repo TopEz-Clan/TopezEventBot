@@ -9,5 +9,6 @@ public class AccountLink
     public string RunescapeName { get; set; }
 
     public Collection<EventParticipation> EventParticipations { get; set; } = new();
-    public Collection<Event> Events { get; set; } = new();
+    public Collection<TrackableEvent> TrackableEvents { get; set; } = new();
+    public Collection<SchedulableEvent> SchedulableEvents { get; set; } = new();
 }
