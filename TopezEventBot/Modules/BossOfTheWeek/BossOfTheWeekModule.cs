@@ -3,7 +3,6 @@ using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using TopezEventBot.Data.Context;
 using TopezEventBot.Data.Entities;
-using TopezEventBot.Extensions;
 using TopezEventBot.Http;
 using TopezEventBot.Modules.SkillOfTheWeek;
 using TopezEventBot.Util;

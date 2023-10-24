@@ -2,7 +2,7 @@
 using TopezEventBot.Data.Entities;
 using TopezEventBot.Util;
 
-namespace TopezEventBot.Extensions;
+namespace TopezEventBot.Data.Extensions;
 
 public static class TopezContextExtensions
 {
