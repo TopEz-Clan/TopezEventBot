@@ -102,16 +102,16 @@ public class WarningModule : InteractionModuleBase<SocketInteractionContext>
         var userWarnings = db.Warnings.Where(x => x.WarnedUser == user.Id);
 
         db.Warnings.RemoveRange(userWarnings);
-        var deletedWarningCount = db.SaveChangesAsync();
+        var deletedWarningCount = await db.SaveChangesAsync();
         
-        if (await deletedWarningCount == 0) {
+        if (deletedWarningCount == 0) {
             await RespondAsync("No warnings to clear!");
             return;
         }
         
         await user.SendMessageAsync(
-            $"You've been cleared of {await deletedWarningCount} warnings by {MentionUtils.MentionUser(Context.User.Id)}");
-        await RespondAsync($"User was cleared of {await deletedWarningCount} warnings");
+            $"You've been cleared of {deletedWarningCount} warnings by {MentionUtils.MentionUser(Context.User.Id)}");
+        await RespondAsync($"User was cleared of {deletedWarningCount} warnings", ephemeral: true);
     }
 
     private string BuildWarningMessage(IEnumerable<Warning> warnings, IUser user)
