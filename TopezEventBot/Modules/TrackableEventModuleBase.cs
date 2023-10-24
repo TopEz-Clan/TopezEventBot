@@ -176,10 +176,22 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
             if (!playerScores.ContainsKey(winner.RunescapeName)) playerScores.Add(winner.RunescapeName, 0);
             playerScores[winner.RunescapeName]++;
         }
+        
+        if (!playerScores.Any())
+        {
+            await RespondAsync("Not enough data for an official leaderboard yet!", ephemeral: true);
+            return;
+        }
 
         var i = 0;
-        var resultMsg = $"All time leaderboard for {_type.GetDisplayName()}\n\n";
-        resultMsg = playerScores.Select(x => new { Player = x.Key, Wins = x.Value }).OrderByDescending(x => x.Wins).Aggregate(resultMsg, (current, playerWins) => current + $"{i++}. {playerWins.Player} - {playerWins.Wins} wins\n");
+        var resultMsg = $"All time leaderboard for {_type.GetDisplayName()}\n\n```";
+        resultMsg = playerScores.Select(x => new { Player = x.Key, Wins = x.Value }).OrderByDescending(x => x.Wins)
+            .Aggregate(resultMsg,
+                (current, playerWins) =>
+                    current +
+                    $"{++i}. {playerWins.Player} - {playerWins.Wins} win{(playerWins.Wins == 1 ? string.Empty : 's')}\n");
+        resultMsg += "```";
+        
         await RespondAsync(resultMsg, ephemeral: true);
     }
 }

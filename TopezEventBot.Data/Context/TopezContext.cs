@@ -7,7 +7,9 @@ public class TopezContext : DbContext
 {
    public DbSet<AccountLink> AccountLinks { get; set; }
    public DbSet<Event> Events { get; set; }
-
+   public DbSet<GuildWarningChannel> GuildWarningChannels { get; set; }
+   public DbSet<Warning> Warnings { get; set; }
+   
    public TopezContext(DbContextOptions options) : base(options)
    {
    }
