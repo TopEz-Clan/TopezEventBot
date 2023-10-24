@@ -90,6 +90,11 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
             .ThenInclude(p => p.AccountLink)
             .OrderByDescending(x => x.Id)
             .FirstOrDefault();
+        if (lastActiveEvent == null)
+        {
+            await RespondAsync($"There's no active {_type.GetDisplayName()} event ongoing!", ephemeral: true);
+            return;
+        }
         
         lastActiveEvent.IsActive = false;
         db.TrackableEvents.Update(lastActiveEvent);
