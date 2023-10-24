@@ -46,7 +46,6 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
 
         var player = await _rsClient.LoadPlayer(linkedAccount.RunescapeName);
 
-
         try
         {
             @event.EventParticipations.Add(new EventParticipation()
@@ -96,6 +95,11 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         db.Events.Update(lastActiveEvent);
         
         var participants = lastActiveEvent.EventParticipations;
+        if (!participants.Any()) {
+            await RespondAsync("Sadly there were no participants this time! :(");
+            return;
+        }
+        
         foreach (var p in participants)
         {
             var player = await _rsClient.LoadPlayer(p.AccountLink.RunescapeName);
@@ -108,15 +112,11 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         }
         db.UpdateRange(participants);
         await db.SaveChangesAsync();
+        
 
         var result = participants.Select(p =>
             new EventResult(p.AccountLink.RunescapeName, p.StartingPoint, p.EndPoint, p.EndPoint - p.StartingPoint, p.AccountLink.DiscordMemberId)
         ).Take(3).OrderByDescending(x => x.Progress);
-        if (result != null && !result.Any())
-        {
-            await RespondAsync("Sadly there were no participants this time! :(");
-            return;
-        }
 
         var firstPlace = result.FirstOrDefault();
         await ReplyAsync($"Winner of this weeks {_type.GetDisplayName()} is {MentionUtils.MentionUser(firstPlace.DiscordUserDisplayName)} with {firstPlace.Progress} {_type.Unit()}! Congratulations!", allowedMentions: AllowedMentions.All);
@@ -156,5 +156,30 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
             type: ThreadType.PublicThread
         );
         return newThread.Id;
+    }
+
+
+    [SlashCommand("leaderboard", "show leaderboard, either by wins or total xp/kc")]
+    [RequireUserPermission(GuildPermission.ViewChannel)]
+    public async Task Leaderboard()
+    {
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        await using var db = scope.ServiceProvider.GetService<TopezContext>();
+        
+        var playerScores = new Dictionary<string, int>();
+        var events = db.Events.Where(x => x.Type == _type).Include(x => x.EventParticipations).ThenInclude(x => x.AccountLink);
+        foreach (var @event in events.Where(x => x.EventParticipations.Any()))
+        {
+            var winner = @event.EventParticipations.ToList().Select(x => new
+                { x.AccountLink.RunescapeName, Progress = x.EndPoint - x.StartingPoint }).MaxBy(x => x.Progress);
+            
+            if (!playerScores.ContainsKey(winner.RunescapeName)) playerScores.Add(winner.RunescapeName, 0);
+            playerScores[winner.RunescapeName]++;
+        }
+
+        var i = 0;
+        var resultMsg = $"All time leaderboard for {_type.GetDisplayName()}\n\n";
+        resultMsg = playerScores.Select(x => new { Player = x.Key, Wins = x.Value }).OrderByDescending(x => x.Wins).Aggregate(resultMsg, (current, playerWins) => current + $"{i++}. {playerWins.Player} - {playerWins.Wins} wins\n");
+        await RespondAsync(resultMsg, ephemeral: true);
     }
 }

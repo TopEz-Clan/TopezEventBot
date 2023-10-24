@@ -89,6 +89,11 @@ public static class LogHelper
             case LogSeverity.Critical:
                 logger.LogCritical(msg.ToString());
                 break;
+            case LogSeverity.Debug:
+                logger.LogDebug(msg.ToString());
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
         return Task.CompletedTask;
     }
