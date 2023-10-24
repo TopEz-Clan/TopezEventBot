@@ -86,16 +86,29 @@ public class WarningModule : InteractionModuleBase<SocketInteractionContext>
                 ephemeral: true);
         }
 
+        var userToWarn = Context.Guild.Users.FirstOrDefault(x => x.Id == userId);
+        var componentBuilder = new ComponentBuilder().AddRow(new ActionRowBuilder().WithButton( "Clear warnings",$"clear-warnings-btn:{userToWarn.Id}", ButtonStyle.Success));
         var channel = Context.Guild.GetTextChannel(warningChannel.WarningChannelId)
-            .SendMessageAsync(BuildWarningMessage(warnings, Context.Guild.Users.FirstOrDefault(x => x.Id == userId)));
-        await RespondAsync("The warnings channel has been informed!", ephemeral: true);
+            .SendMessageAsync(BuildWarningMessage(warnings, userToWarn), components: componentBuilder.Build());
+        await RespondAsync("The mod team has been informed!", ephemeral: true);
     }
 
+    [ComponentInteraction("clear-warnings-btn:*")]
+    public async Task ClearUserWarningsBtnHandler(string userIdAsString)
+    {
+        var userId = ulong.Parse(userIdAsString);
+        var user = Context.Guild.Users.FirstOrDefault(x => x.Id == userId);
+        await ClearUserWarnings(user);
+    }
 
     [SlashCommand("clear-user-warnings", "Clears the selected user of his warnings")]
     [RequireUserPermission(GuildPermission.KickMembers)]
-    public async Task ClearUserWarnings(IUser user)
+    public async Task ClearUserWarningsCommand(IUser user)
     {
+        await ClearUserWarnings(user);
+    }
+    
+    private async Task ClearUserWarnings(IUser user) {
         await using var scope = _scopeFactory.CreateAsyncScope();
         await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
 
@@ -114,10 +127,10 @@ public class WarningModule : InteractionModuleBase<SocketInteractionContext>
         await RespondAsync($"User was cleared of {deletedWarningCount} warnings", ephemeral: true);
     }
 
-    private string BuildWarningMessage(IEnumerable<Warning> warnings, IUser user)
+    private static string BuildWarningMessage(IEnumerable<Warning> warnings, IUser user)
     {
         var msg =
-            $"Hey guys, the user {MentionUtils.MentionUser(user.Id)} has been issued the following warnings and should be discussed\n";
+            $"Hey guys, the user {MentionUtils.MentionUser(user.Id)} has been issued the following warnings that should be manually reviewed\n";
         var idx = 0;
         msg =
             $"{warnings.Aggregate(msg, (current, w) => current + $"{++idx}. by {MentionUtils.MentionUser(w.WarnedBy)} - {w.Reason}\n")}\n";
