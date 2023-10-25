@@ -8,7 +8,8 @@ public class AccountLink
     public ulong DiscordMemberId { get; set; }
     public string RunescapeName { get; set; }
 
-    public Collection<EventParticipation> EventParticipations { get; set; } = new();
+    public Collection<SchedulableEventParticipation> SchedulableEventParticipations { get; set; } = new();
+    public Collection<TrackableEventParticipation> TrackableEventParticipations { get; set; } = new();
     public Collection<TrackableEvent> TrackableEvents { get; set; } = new();
     public Collection<SchedulableEvent> SchedulableEvents { get; set; } = new();
 }

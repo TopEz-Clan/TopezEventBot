@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using TopezEventBot.Data.Context;
 using TopezEventBot.Data.Entities;
 using TopezEventBot.Data.Extensions;
+using TopezEventBot.Data.Models.Extensions;
 using TopezEventBot.Http;
 using TopezEventBot.Http.Models;
 using TopezEventBot.Util;
@@ -48,7 +49,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
 
         try
         {
-            @event.EventParticipations.Add(new EventParticipation()
+            @event.EventParticipations.Add(new TrackableEventParticipation()
             {
                 Event = @event,
                 AccountLink = linkedAccount,
@@ -163,6 +164,34 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         return newThread.Id;
     }
 
+    protected async Task ListEventParticipants(long eventId)
+    {
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
+
+        var @event = db.TrackableEvents.Include(x => x.Participants).FirstOrDefault(x => x.Id == eventId);
+
+        if (@event == null)
+        {
+            await RespondAsync("The event seems to be deleted", ephemeral: true);
+            return;
+        }
+
+        if (!@event.Participants.Any())
+        {
+            await RespondAsync("There's no participants for this event yet :(", ephemeral: true);
+            return;
+        }
+
+        if (!@event.Participants.Select(x => x.DiscordMemberId).Contains(Context.User.Id))
+        {
+            await RespondAsync("You need to be registered to see the participants!", ephemeral: true);
+            return;
+        }
+        var msg = @event.Participants.Aggregate("The following people are participating: \n\n", (current, accountLink) => current + "* " + (accountLink.RunescapeName + "\n"));
+
+        await RespondAsync(msg, ephemeral: true);
+    }
 
     [SlashCommand("leaderboard", "show leaderboard, either by wins or total xp/kc")]
     [RequireUserPermission(GuildPermission.ViewChannel)]

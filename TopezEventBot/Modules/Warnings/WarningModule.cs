@@ -15,7 +15,7 @@ public class WarningModule : InteractionModuleBase<SocketInteractionContext>
         _scopeFactory = scopeFactory;
     }
 
-    [SlashCommand("warn", "Warns the user and adds a strike")]
+    [SlashCommand("issue-warning", "Warns the user and adds a strike")]
     [RequireUserPermission(GuildPermission.KickMembers)]
     public async Task WarnUser(IUser user)
     {

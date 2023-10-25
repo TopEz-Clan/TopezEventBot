@@ -9,10 +9,9 @@ public class DiscordStartupService : IHostedService
     private readonly DiscordSocketClient _discordSocketClient;
     private readonly IConfiguration _config;
     private readonly ILogger<DiscordStartupService> _logger;
-    private readonly IRunescapeHiscoreHttpClient client;
 
     
-    public DiscordStartupService(ILogger<DiscordStartupService> logger, DiscordSocketClient discordSocketClient, IConfiguration config, IRunescapeHiscoreHttpClient client)
+    public DiscordStartupService(ILogger<DiscordStartupService> logger, DiscordSocketClient discordSocketClient, IConfiguration config)
     {
         _logger = logger;
         _discordSocketClient = discordSocketClient;
@@ -30,5 +29,4 @@ public class DiscordStartupService : IHostedService
         await _discordSocketClient.LogoutAsync();
         await _discordSocketClient.StopAsync();
     }
-
 }

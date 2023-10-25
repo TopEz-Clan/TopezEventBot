@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TopezEventBot.Data.Context;
 
@@ -10,9 +11,11 @@ using TopezEventBot.Data.Context;
 namespace TopezEventBot.Data.Migrations
 {
     [DbContext(typeof(TopezContext))]
-    partial class TopezContextModelSnapshot : ModelSnapshot
+    [Migration("20231025111157_AddScheduledEventParticipationTable")]
+    partial class AddScheduledEventParticipationTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.12");

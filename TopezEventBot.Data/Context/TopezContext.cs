@@ -18,10 +18,16 @@ public class TopezContext : DbContext
 
    protected override void OnModelCreating(ModelBuilder modelBuilder)
    {
+       
     modelBuilder.Entity<TrackableEvent>()
         .HasMany(e => e.Participants)
         .WithMany(e => e.TrackableEvents)
-        .UsingEntity<EventParticipation>();
+        .UsingEntity<TrackableEventParticipation>();
+    
+    modelBuilder.Entity<SchedulableEvent>()
+        .HasMany(e => e.Participants)
+        .WithMany(e => e.SchedulableEvents)
+        .UsingEntity<SchedulableEventParticipation>();
    }
 
    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>

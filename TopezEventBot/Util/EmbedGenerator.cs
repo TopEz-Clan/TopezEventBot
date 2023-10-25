@@ -1,6 +1,7 @@
 using System.Reflection;
 using Discord;
 using TopezEventBot.Data.Entities;
+using TopezEventBot.Data.Models.Extensions;
 using TopezEventBot.Http.Models;
 using TopezEventBot.Modules.WildyWednesday;
 using TopezEventBot.Util.Extensions;
@@ -34,44 +35,61 @@ public class EmbedGenerator {
         specBuilder.ImageUrl = data.GetBannerUrl();
         return specBuilder.Build();
     }
-
     
-    public static Embed WildyWednesday(HiscoreField activity, String location, String startTime) {
-        var description = "As always, *REACT* to this post if you're planning on coming so we have an idea on how many members are joining.";
+    public static Embed WildyWednesday(HiscoreField activity, string location, DateTime startTime) {
+        var description = "As always, use the *REGISTER* button down below if you're planning on coming so we have an idea on how many members are joining.";
         var title = $"Wildy Wednesday - {activity.GetDisplayName()}";
         var footer = new EmbedFooterBuilder { Text = "For non-pkers: Toggle PK Skull Prevention in settings! Only risk what you can afford to lose.",  IconUrl = Constants.INFORMATIONAL_FOOTER_LOGO_URL };
         var fields = new EmbedFieldBuilder[]{
                 Field("This week's boss:", activity.GetDisplayName(), true),
                 Field("Where to meet:", "*" + location + "*", true),
-                Field("Event Start:", "*Wednesday @ " + startTime + " UTC*", true),
+                Field("Event Start:", $"*{startTime:f} UTC*", true),
                 Field("Splitting Rules:", "Only split voidwaker pieces, the rest is FFA", false),
         };
     
         return Generate(title, description, activity, footer, fields);
     }
-    //
-    // public static EmbedCreateSpec Mass(String location, String startTime) {
-    //     var title = "Sunday Corp Mass";
-    //     var description = "As always, *REACT* to this post if you're planning on coming so we have an idea on how many members are joining.";
-    //     var data = new EmbedData("","https://i.imgur.com/kStnFWS.png","https://i.imgur.com/Uvk3Tot.png");
-    //     var fields = new EmbedCreateFields.Field[] {
-    //         EmbedCreateFields.Field.of("Where to meet:", "*" + location + "*", true),
-    //         EmbedCreateFields.Field.of("Event Start:", "*Sunday @ " + startTime.substring(0, startTime.length() - 1) + " UTC*", true),
-    //         EmbedCreateFields.Field.of("Splitting Rules:", "Split all Sigil drops between participants of the kill; Free For All on the rest of the drops.", false),
-    //     };
-    //     var footer = EmbedCreateFields.Footer.of("Check out #setups-and-guides if you're unsure what to bring to corp!", Constants.INFORMATIONAL_FOOTER_LOGO_URL);
-    //     return Generate(title, description, HiscoreField.CorporealBeast, footer, fields); // todo
-    // }
-    //
+    
+    public static Embed Mass(HiscoreField activity, string location, DateTime startTime) {
+        var title = $"{activity.GetDisplayName()} Mass";
+        var description = "As always, click the register button on this post if you're planning on coming so we have an idea on how many members are joining.";
+        var fields = new[] {
+            Field("Where to meet:", "*" + location + "*", true),
+            Field("Event Start:", $"*{startTime.ToUniversalTime():f} UTC*", true),
+            Field("Splitting Rules:", "Split all big drops between participants of the kill; Free For All on the rest of the drops.", false),
+        };
+        var footer = new EmbedFooterBuilder { Text = "Check out #setups-and-guides if you're unsure what to bring!", IconUrl = Constants.INFORMATIONAL_FOOTER_LOGO_URL};
+        return Generate(title, description, activity, footer, fields); 
+    }
+    
 
     private static EmbedFieldBuilder Field(string name, string value, bool inline)
     {
         return new EmbedFieldBuilder { IsInline = inline, Name = name, Value = value };
     }
     
+    public static Embed ScheduledEventReminder(SchedulableEvent @event)
+    {
+        var title = $"Event reminder";
+        var description =
+            $"Your event starts in {( @event.ScheduledAt.UtcDateTime - DateTimeOffset.UtcNow.UtcDateTime ).Minutes} Minutes";
+        
+        var fields = new EmbedFieldBuilder[] {
+           Field("Activity", @event.Activity.GetDisplayName(), inline: true),
+           Field("Location", @event.Location, inline: true),
+           Field("Start time", @event.ScheduledAt.UtcDateTime.ToString("f") + " UTC", inline: true),
+        };
+        var footer = new EmbedFooterBuilder()
+        {
+            IconUrl = Constants.INFORMATIONAL_FOOTER_LOGO_URL,
+            Text = "Please head over to the specified location"
+        };
+        return Generate(title, description, @event.Activity, footer, fields);
+    }
+    
     public static Embed SkillOfTheWeek(HiscoreField skill) {
         var title = $"Skill of the Week - {skill.GetDisplayName()}";
-        var description = "As always, the 1st place winner of the competition will receive a prize, as well as a temporary in-game rank. Be sure to post a screenshot below containing the code-word and your start exp in the skill! This event will last a week, so good luck!";
+        var description = "As always, the 1st place winner of the competition will receive a prize, as well as a temporary in-game rank! This event will last a week, so good luck!";
         var fields = new EmbedFieldBuilder[] {
                 Field("This week's skill:", skill.GetDisplayName(), true) ,
                 Field("Prize:", "A bond for ironmen, or GP equivalent for a main account", false) ,
@@ -83,7 +101,7 @@ public class EmbedGenerator {
     //
     public static Embed BossOfTheWeek(HiscoreField boss) {
         var title = $"Boss of the Week - {boss.GetDisplayName()}";
-        var description = "As always, the 1st place winner of the competition will receive a prize, as well as a temporary in-game rank. Be sure to post a screenshot below including the code-word as well as your starting killcount! (Found in the collection log)";
+        var description = "As always, the 1st place winner of the competition will receive a prize, as well as a temporary in-game rank. This event will last a week, so good luck!";
         var footer = new EmbedFooterBuilder { Text = "Be sure to include the code-word in your starting screenshot or you will not be eligible to win!", IconUrl = Constants.INFORMATIONAL_FOOTER_LOGO_URL };
         var fields = new EmbedFieldBuilder[] {
                 Field("This week's boss:", boss.GetDisplayName(), true),

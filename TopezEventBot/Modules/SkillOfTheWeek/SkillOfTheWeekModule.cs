@@ -14,7 +14,7 @@ public class SkillOfTheWeekModule : TrackableEventModuleBase
     }
     
     [SlashCommand("start", "Start skill of the week!")]
-    [RequireUserPermission(GuildPermission.KickMembers)]
+    [RequireRole("Coordinator")]
     public async Task StartSkillOfTheWeek(SkillOfTheWeekChoice sotw, bool isActive = true)
     {
         await StartEvent((HiscoreField)sotw, isActive);
@@ -25,5 +25,4 @@ public class SkillOfTheWeekModule : TrackableEventModuleBase
     {
         await base.RegisterForEvent(eventIdAsString, threadIdAsString);
     }
-
 }

@@ -1,8 +1,8 @@
 using TopezEventBot.Data.Entities;
 
-namespace TopezEventBot.Util.Extensions;
+namespace TopezEventBot.Data.Models.Extensions;
 
-public static class EventTypeExtensions
+public static class TrackableEventTypeExtensions
 {
     public static string GetDisplayName(this TrackableEventType type) => type switch
     {

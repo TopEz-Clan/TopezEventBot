@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TopezEventBot.Data.Context;
 
@@ -10,12 +11,29 @@ using TopezEventBot.Data.Context;
 namespace TopezEventBot.Data.Migrations
 {
     [DbContext(typeof(TopezContext))]
-    partial class TopezContextModelSnapshot : ModelSnapshot
+    [Migration("20231025105201_ScheduledEventLocation")]
+    partial class ScheduledEventLocation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.12");
+
+            modelBuilder.Entity("AccountLinkSchedulableEvent", b =>
+                {
+                    b.Property<long>("ParticipantsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("SchedulableEventsId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ParticipantsId", "SchedulableEventsId");
+
+                    b.HasIndex("SchedulableEventsId");
+
+                    b.ToTable("AccountLinkSchedulableEvent");
+                });
 
             modelBuilder.Entity("TopezEventBot.Data.Entities.AccountLink", b =>
                 {
@@ -33,6 +51,30 @@ namespace TopezEventBot.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AccountLinks");
+                });
+
+            modelBuilder.Entity("TopezEventBot.Data.Entities.EventParticipation", b =>
+                {
+                    b.Property<long>("AccountLinkId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("EventId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("EndPoint")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("RegisteredAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("StartingPoint")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AccountLinkId", "EventId");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("EventParticipation");
                 });
 
             modelBuilder.Entity("TopezEventBot.Data.Entities.GuildWarningChannel", b =>
@@ -65,6 +107,9 @@ namespace TopezEventBot.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("NotificationSent")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTimeOffset>("ScheduledAt")
                         .HasColumnType("TEXT");
 
@@ -74,27 +119,6 @@ namespace TopezEventBot.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SchedulableEvents");
-                });
-
-            modelBuilder.Entity("TopezEventBot.Data.Entities.SchedulableEventParticipation", b =>
-                {
-                    b.Property<long>("AccountLinkId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long>("EventId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("Notified")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("RegisteredAt")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("AccountLinkId", "EventId");
-
-                    b.HasIndex("EventId");
-
-                    b.ToTable("SchedulableEventParticipation");
                 });
 
             modelBuilder.Entity("TopezEventBot.Data.Entities.TrackableEvent", b =>
@@ -115,30 +139,6 @@ namespace TopezEventBot.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TrackableEvents");
-                });
-
-            modelBuilder.Entity("TopezEventBot.Data.Entities.TrackableEventParticipation", b =>
-                {
-                    b.Property<long>("AccountLinkId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long>("EventId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("EndPoint")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("RegisteredAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("StartingPoint")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("AccountLinkId", "EventId");
-
-                    b.HasIndex("EventId");
-
-                    b.ToTable("TrackableEventParticipation");
                 });
 
             modelBuilder.Entity("TopezEventBot.Data.Entities.Warning", b =>
@@ -162,29 +162,25 @@ namespace TopezEventBot.Data.Migrations
                     b.ToTable("Warnings");
                 });
 
-            modelBuilder.Entity("TopezEventBot.Data.Entities.SchedulableEventParticipation", b =>
+            modelBuilder.Entity("AccountLinkSchedulableEvent", b =>
                 {
-                    b.HasOne("TopezEventBot.Data.Entities.AccountLink", "AccountLink")
-                        .WithMany("SchedulableEventParticipations")
-                        .HasForeignKey("AccountLinkId")
+                    b.HasOne("TopezEventBot.Data.Entities.AccountLink", null)
+                        .WithMany()
+                        .HasForeignKey("ParticipantsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TopezEventBot.Data.Entities.SchedulableEvent", "Event")
-                        .WithMany("EventParticipations")
-                        .HasForeignKey("EventId")
+                    b.HasOne("TopezEventBot.Data.Entities.SchedulableEvent", null)
+                        .WithMany()
+                        .HasForeignKey("SchedulableEventsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("AccountLink");
-
-                    b.Navigation("Event");
                 });
 
-            modelBuilder.Entity("TopezEventBot.Data.Entities.TrackableEventParticipation", b =>
+            modelBuilder.Entity("TopezEventBot.Data.Entities.EventParticipation", b =>
                 {
                     b.HasOne("TopezEventBot.Data.Entities.AccountLink", "AccountLink")
-                        .WithMany("TrackableEventParticipations")
+                        .WithMany("EventParticipations")
                         .HasForeignKey("AccountLinkId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -201,13 +197,6 @@ namespace TopezEventBot.Data.Migrations
                 });
 
             modelBuilder.Entity("TopezEventBot.Data.Entities.AccountLink", b =>
-                {
-                    b.Navigation("SchedulableEventParticipations");
-
-                    b.Navigation("TrackableEventParticipations");
-                });
-
-            modelBuilder.Entity("TopezEventBot.Data.Entities.SchedulableEvent", b =>
                 {
                     b.Navigation("EventParticipations");
                 });

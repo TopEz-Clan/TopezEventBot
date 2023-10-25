@@ -7,6 +7,12 @@
       "commands": [
         "dotnet-ef"
       ]
+    },
+    "coravel-cli": {
+      "version": "1.0.0",
+      "commands": [
+        "coravel"
+      ]
     }
   }
 }
