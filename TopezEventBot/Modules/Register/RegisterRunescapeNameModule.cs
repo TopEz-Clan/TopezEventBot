@@ -1,13 +1,12 @@
 using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using TopezEventBot.Data.Context;
 using TopezEventBot.Data.Entities;
 using TopezEventBot.Http;
 using TopezEventBot.Util;
 
-namespace TopezEventBot.Modules;
+namespace TopezEventBot.Modules.Register;
 
 public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteractionContext>
 {
@@ -23,8 +22,8 @@ public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteracti
     [SlashCommand("unlink-rsn", "Unlinks your runescape username from your discord account")]
     [RequireUserPermission(GuildPermission.ViewChannel)]
     public async Task UnlinkRunescapeAccount() {
-        using var scope = _provider.CreateScope();
-        await using var ctx = scope.ServiceProvider.GetService<TopezContext>();
+        await using var scope = _provider.CreateAsyncScope();
+        await using var ctx = scope.ServiceProvider.GetRequiredService<TopezContext>();
         var account = await ctx.AccountLinks.FirstOrDefaultAsync(x => x.DiscordMemberId == Context.User.Id);
         if (account == null)
         {
@@ -48,7 +47,7 @@ public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteracti
     public async Task RegisterRunescapeName()
     {
         using var scope = _provider.CreateScope();
-        await using var ctx = scope.ServiceProvider.GetService<TopezContext>();
+        await using var ctx = scope.ServiceProvider.GetRequiredService<TopezContext>();
         var memberId = Context.User.Id;
         var accountLinked = ctx.AccountLinks.Any(x => x.DiscordMemberId == memberId);
 
@@ -75,10 +74,10 @@ public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteracti
     [ComponentInteraction("confirm-rsn-button:*")]
     public async Task ConfirmUsernameButton(string rsn)
     {
-        using var scope = _provider.CreateScope();
-        var ctx = scope.ServiceProvider.GetService<TopezContext>();
+        await using var scope = _provider.CreateAsyncScope();
+        await using var ctx = scope.ServiceProvider.GetRequiredService<TopezContext>();
         var member = Context.User.Id;
-        ctx?.AccountLinks.Add(new AccountLink { DiscordMemberId = member, RunescapeName = rsn });
+        ctx.AccountLinks.Add(new AccountLink { DiscordMemberId = member, RunescapeName = rsn });
         var count = await ctx.SaveChangesAsync();
         await Context.Interaction.RespondAsync(count > 0
             ? $"Account {rsn} successfully linked!"
