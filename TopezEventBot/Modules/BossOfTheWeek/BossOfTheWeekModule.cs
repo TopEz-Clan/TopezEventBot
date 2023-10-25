@@ -57,5 +57,11 @@ public class BossOfTheWeekModule : TrackableEventModuleBase
     {
         await RegisterForEvent(eventId, threadId);
     }
+    
+    [ComponentInteraction("list-participants-botw:*", ignoreGroupNames: true)]
+    public override async Task ListParticipants(long eventId)
+    {
+        await base.ListEventParticipants(eventId);
+    }
 
 }
