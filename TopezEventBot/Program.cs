@@ -4,7 +4,6 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using TopezEventBot;
-using TopezEventBot.Data;
 using TopezEventBot.Data.Context;
 using TopezEventBot.Http;
 using TopezEventBot.Invocables;
@@ -27,7 +26,17 @@ IHost host = Host.CreateDefaultBuilder(args)
         });
         services.AddScheduler();
         
-        services.AddDbContext<TopezContext>(opts => opts.UseSqlite($"Data Source={Util.DbPath()}"));
+        services.AddDbContext<TopezContext>((services, opts) =>
+        {
+            var config = services.GetRequiredService<IConfiguration>();
+            var connectionString = config.GetConnectionString("topez");
+            if (connectionString.Contains("%LOCALAPPDATA%"))
+            {
+                connectionString = connectionString.Replace("%LOCALAPPDATA%",
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+            }
+            opts.UseSqlite(connectionString);
+        });
     })
     .Build();
 
@@ -36,11 +45,9 @@ host.Services.UseScheduler(scheduler =>
     scheduler
         .Schedule<CheckForScheduledEventNotification>()
         .EveryMinute();
-
 });
 
 await UpdateDatabase(host);
-
 
 host.Run();
 return;
