@@ -22,6 +22,7 @@ public class DiscordStartupService : IHostedService
     {
         await _discordSocketClient.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("BOT_TOKEN"));
         await _discordSocketClient.StartAsync();
+        await _discordSocketClient.SetGameAsync("LionLadTV on Twitch", "https://twitch.tv/lionladtv", ActivityType.Watching);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
