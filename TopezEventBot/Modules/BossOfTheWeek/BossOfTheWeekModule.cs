@@ -19,14 +19,14 @@ public class BossOfTheWeekModule : TrackableEventModuleBase
 
     [SlashCommand("wildy", "Start boss of the week")]
     [RequireUserPermission(GuildPermission.KickMembers)]
-    public async Task StartWildyBotw(WildyBosses boss, bool isActive = true)
+    public async Task StartWildernessBotw(WildyBosses boss, bool isActive = true)
     {
         await StartEvent((HiscoreField)boss, isActive);
     }
     
     [SlashCommand("group", "Start boss of the week")]
     [RequireUserPermission(GuildPermission.KickMembers)]
-    public async Task StartWildyBotw(GroupBosses boss, bool isActive = true)
+    public async Task StartGroupBotw(GroupBosses boss, bool isActive = true)
     {
         await StartEvent((HiscoreField)boss, isActive);
     }
@@ -40,20 +40,20 @@ public class BossOfTheWeekModule : TrackableEventModuleBase
     
     [SlashCommand("slayer", "Start boss of the week")]
     [RequireUserPermission(GuildPermission.KickMembers)]
-    public async Task StartQuestBotw(SlayerBosses boss, bool isActive = true)
+    public async Task StartSlayerBotw(SlayerBosses boss, bool isActive = true)
     {
         await StartEvent((HiscoreField)boss, isActive);
     }
     
     [SlashCommand("world", "Start boss of the week")]
     [RequireUserPermission(GuildPermission.KickMembers)]
-    public async Task StartQuestBotw(WorldBosses boss, bool isActive = true)
+    public async Task StartWorldBotw(WorldBosses boss, bool isActive = true)
     {
         await StartEvent((HiscoreField)boss, isActive);
     }
 
     [ComponentInteraction("register-for-botw:*,*", ignoreGroupNames: true)]
-    public async Task RegisterForBotw(string eventId, string threadId)
+    public async Task RegisterForBotw(long eventId, ulong threadId)
     {
         await RegisterForEvent(eventId, threadId);
     }
@@ -61,7 +61,6 @@ public class BossOfTheWeekModule : TrackableEventModuleBase
     [ComponentInteraction("list-participants-botw:*", ignoreGroupNames: true)]
     public override async Task ListParticipants(long eventId)
     {
-        await base.ListEventParticipants(eventId);
+        await ListEventParticipants(eventId);
     }
-
 }

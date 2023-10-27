@@ -22,14 +22,14 @@ public class SkillOfTheWeekModule : TrackableEventModuleBase
     }
 
     [ComponentInteraction("register-for-sotw:*,*", ignoreGroupNames: true)]
-    public async Task RegisterForSotw(string eventIdAsString, string threadIdAsString)
+    public async Task RegisterForSotw(long eventId, ulong threadId)
     {
-        await base.RegisterForEvent(eventIdAsString, threadIdAsString);
+        await RegisterForEvent(eventId, threadId);
     }
 
     [ComponentInteraction("list-participants-sotw:*", ignoreGroupNames: true)]
     public override async Task ListParticipants(long eventId)
     {
-        await base.ListEventParticipants(eventId);
+        await ListEventParticipants(eventId);
     }
 }

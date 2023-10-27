@@ -8,7 +8,7 @@ using TopezEventBot.Data.Context;
 using TopezEventBot.Http;
 using TopezEventBot.Invocables;
 
-IHost host = Host.CreateDefaultBuilder(args)
+var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
     {
         services.AddSingleton(new DiscordSocketConfig()
@@ -54,7 +54,7 @@ return;
 
 async Task UpdateDatabase(IHost host)
 {
-    using var scope = host.Services.CreateScope();
-    var ctx = scope.ServiceProvider.GetService<TopezContext>();
-    await ctx?.Database.MigrateAsync();
+    await using var scope = host.Services.CreateAsyncScope();
+    var ctx = scope.ServiceProvider.GetRequiredService<TopezContext>();
+    await ctx.Database.MigrateAsync();
 }

@@ -26,11 +26,10 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         _type = type;
     }
 
-    protected async Task RegisterForEvent(string eventIdAsString, string threadIdAsString)
+    protected async Task RegisterForEvent(long eventId, ulong threadId)
     {
         await using var scope = _scopeFactory.CreateAsyncScope();
         await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
-        var eventId = long.Parse(eventIdAsString);
         var @event = db.TrackableEvents.FirstOrDefault(e => e.Id == eventId);
         if (@event == null)
         {
@@ -79,7 +78,6 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
             return;
         }
 
-        var threadId = ulong.Parse(threadIdAsString);
         var eventType = _type switch
         {
             TrackableEventType.BossOfTheWeek => "Boss", TrackableEventType.SkillOfTheWeek => "Skill",
@@ -235,8 +233,8 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         {
             var winner = @event.EventParticipations.ToList().Select(x => new
                 { x.AccountLink.RunescapeName, Progress = x.EndPoint - x.StartingPoint }).MaxBy(x => x.Progress);
-
-            if (!playerScores.ContainsKey(winner.RunescapeName)) playerScores.Add(winner.RunescapeName, 0);
+            if (winner == null) continue;
+            playerScores.TryAdd(winner.RunescapeName, 0);
             playerScores[winner.RunescapeName]++;
         }
 
