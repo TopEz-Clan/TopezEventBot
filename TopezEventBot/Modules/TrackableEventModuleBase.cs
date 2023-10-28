@@ -30,25 +30,26 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
     {
         await using var scope = _scopeFactory.CreateAsyncScope();
         await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
+        await DeferAsync();
         var @event = db.TrackableEvents.FirstOrDefault(e => e.Id == eventId);
         var memberId = Context.User.Id;
         var linkedAccount = db.AccountLinks.FirstOrDefault(x => x.DiscordMemberId == memberId);
         if (@event == null)
         {
-            await RespondAsync("It seems this event has been deleted, please contact the Coordinator team",
+            await FollowupAsync("It seems this event has been deleted, please contact the Coordinator team",
                 ephemeral: true);
             return;
         }
 
         if (!@event.IsActive)
         {
-            await RespondAsync("The event has already concluded!", ephemeral: true);
+            await FollowupAsync("The event has already concluded!", ephemeral: true);
             return;
         }
 
         if (linkedAccount == null)
         {
-            await RespondAsync(
+            await FollowupAsync(
                 "You have no linked account yet - please link your runescape account first with the */link-rsn* command",
                 ephemeral: true);
             return;
@@ -74,7 +75,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         }
         catch (DbUpdateException e)
         {
-            await RespondAsync($"You already participate in this {_type.GetDisplayName()}", ephemeral: true);
+            await FollowupAsync($"You already participate in this {_type.GetDisplayName()}", ephemeral: true);
             return;
         }
 
@@ -97,7 +98,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         var message =
             $"Registered {player.UserName} for {eventType} {@event.Activity.GetDisplayName()} with *{startProgress}*";
         await Context.Guild.ThreadChannels.FirstOrDefault(x => x.Id == threadId)?.SendMessageAsync(message)!;
-        await RespondAsync(message, ephemeral: true);
+        await FollowupAsync(message, ephemeral: true);
     }
 
     [SlashCommand("finish", "Sets the last boss of the week command to inactive and compiles winner-data")]
@@ -106,6 +107,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         await using var scope = _scopeFactory.CreateAsyncScope();
         await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
 
+        await DeferAsync();
         var lastActiveEvent = db.TrackableEvents.Where(x => x.Type == _type)
             .Include(x => x.EventParticipations)
             .ThenInclude(p => p.AccountLink)
@@ -113,7 +115,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
             .FirstOrDefault();
         if (lastActiveEvent == null)
         {
-            await RespondAsync($"There's no active {_type.GetDisplayName()} event ongoing!", ephemeral: true);
+            await FollowupAsync($"There's no active {_type.GetDisplayName()} event ongoing!", ephemeral: true);
             return;
         }
 
@@ -123,7 +125,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         var participants = lastActiveEvent.EventParticipations;
         if (!participants.Any())
         {
-            await RespondAsync("Sadly there were no participants this time! :(");
+            await FollowupAsync("Sadly there were no participants this time! :(");
             return;
         }
 
@@ -151,7 +153,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         await ReplyAsync(
             $"Winner of this weeks {_type.GetDisplayName()} is {MentionUtils.MentionUser(firstPlace.DiscordUserDisplayName)} with {firstPlace.Progress} {_type.Unit()}! Congratulations!",
             allowedMentions: AllowedMentions.All);
-        await RespondAsync(embed: EmbedGenerator.EventWinner(_type, lastActiveEvent.Activity, result));
+        await FollowupAsync( embed: EmbedGenerator.EventWinner(_type, lastActiveEvent.Activity, result));
     }
 
     protected async Task StartEvent(HiscoreField activity, bool isActive = true)
@@ -171,7 +173,8 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         componentBuilder.AddRow(new ActionRowBuilder()
             .WithButton("Register", $"register-for-{eventAbbrev}:{eventId},{threadId}", ButtonStyle.Success)
             .WithButton("List participants", $"list-participants-{eventAbbrev}:{eventId}", ButtonStyle.Secondary));
-        await RespondAsync(embed: _type switch
+        await DeferAsync();
+        await FollowupAsync(embed: _type switch
         {
             TrackableEventType.BossOfTheWeek => EmbedGenerator.BossOfTheWeek(activity),
             TrackableEventType.SkillOfTheWeek => EmbedGenerator.SkillOfTheWeek(activity),
@@ -198,30 +201,32 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         await using var scope = _scopeFactory.CreateAsyncScope();
         await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
 
+        await DeferAsync();
+        
         var @event = db.TrackableEvents.Include(x => x.Participants).FirstOrDefault(x => x.Id == eventId);
 
         if (@event == null)
         {
-            await RespondAsync("The event seems to be deleted", ephemeral: true);
+            await FollowupAsync("The event seems to be deleted", ephemeral: true);
             return;
         }
 
         if (!@event.Participants.Any())
         {
-            await RespondAsync("There's no participants for this event yet :(", ephemeral: true);
+            await FollowupAsync("There's no participants for this event yet :(", ephemeral: true);
             return;
         }
 
         if (!@event.Participants.Select(x => x.DiscordMemberId).Contains(Context.User.Id))
         {
-            await RespondAsync("You need to be registered to see the participants!", ephemeral: true);
+            await FollowupAsync("You need to be registered to see the participants!", ephemeral: true);
             return;
         }
 
         var msg = @event.Participants.Aggregate("The following people are participating: \n\n",
             (current, accountLink) => current + "* " + (accountLink.RunescapeName + "\n"));
 
-        await RespondAsync(msg, ephemeral: true);
+        await FollowupAsync(msg, ephemeral: true);
     }
 
     [SlashCommand("leaderboard", "show leaderboard, either by wins or total xp/kc")]
@@ -231,6 +236,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         await using var scope = _scopeFactory.CreateAsyncScope();
         await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
 
+        await DeferAsync();
         var playerScores = new Dictionary<string, int>();
         var events = db.TrackableEvents.Where(x => x.Type == _type).Include(x => x.EventParticipations)
             .ThenInclude(x => x.AccountLink);
@@ -245,7 +251,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
 
         if (!playerScores.Any())
         {
-            await RespondAsync("Not enough data for an official leaderboard yet!", ephemeral: true);
+            await FollowupAsync("Not enough data for an official leaderboard yet!", ephemeral: true);
             return;
         }
 
@@ -258,6 +264,6 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
                     $"{++i}. {playerWins.Player} - {playerWins.Wins} win{(playerWins.Wins == 1 ? string.Empty : 's')}\n");
         resultMsg += "```";
 
-        await RespondAsync(resultMsg, ephemeral: true);
+        await FollowupAsync(resultMsg, ephemeral: true);
     }
 }

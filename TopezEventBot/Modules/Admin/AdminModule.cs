@@ -1,5 +1,6 @@
 using Discord;
 using Discord.Interactions;
+using Microsoft.EntityFrameworkCore;
 using TopezEventBot.Data.Context;
 
 namespace TopezEventBot.Modules.Admin;
@@ -21,10 +22,11 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         await using var scope = _scopeFactory.CreateAsyncScope();
         await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
 
-        var linkedAccounts = db.AccountLinks;
+        await DeferAsync(ephemeral: true);
+        var linkedAccounts = await db.AccountLinks.ToListAsync();
 
         var result = $"Currently there are {linkedAccounts.Count()} linked accounts: \n";
-        await RespondAsync(linkedAccounts.Aggregate(result,
+        await FollowupAsync(linkedAccounts.Aggregate(result,
             ((current, link) => current + MentionUtils.MentionUser(link.DiscordMemberId) +
                                 $" with rsn {link.RunescapeName}\n")), ephemeral: true);
     }
