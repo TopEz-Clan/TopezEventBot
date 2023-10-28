@@ -13,7 +13,12 @@ var host = Host.CreateDefaultBuilder(args)
     {
         services.AddSingleton(new DiscordSocketConfig()
         {
-            GatewayIntents = GatewayIntents.All
+            GatewayIntents = GatewayIntents.All,
+            UseInteractionSnowflakeDate = false
+        });
+        services.AddSingleton(new InteractionServiceConfig()
+        {
+            UseCompiledLambda = true,
         });
         services.AddSingleton<DiscordSocketClient>();       // Add the discord client to services
         services.AddSingleton<InteractionService>();        // Add the interaction service to services

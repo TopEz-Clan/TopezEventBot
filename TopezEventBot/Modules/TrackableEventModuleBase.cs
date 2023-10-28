@@ -31,6 +31,8 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         await using var scope = _scopeFactory.CreateAsyncScope();
         await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
         var @event = db.TrackableEvents.FirstOrDefault(e => e.Id == eventId);
+        var memberId = Context.User.Id;
+        var linkedAccount = db.AccountLinks.FirstOrDefault(x => x.DiscordMemberId == memberId);
         if (@event == null)
         {
             await RespondAsync("It seems this event has been deleted, please contact the Coordinator team",
@@ -44,8 +46,6 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
             return;
         }
 
-        var memberId = Context.User.Id;
-        var linkedAccount = db.AccountLinks.FirstOrDefault(x => x.DiscordMemberId == memberId);
         if (linkedAccount == null)
         {
             await RespondAsync(
