@@ -132,8 +132,8 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
             var player = await _rsClient.LoadPlayer(p.AccountLink.RunescapeName);
             p.EndPoint = _type switch
             {
-                TrackableEventType.BossOfTheWeek => player.Bosses[lastActiveEvent.Activity].KillCount,
-                TrackableEventType.SkillOfTheWeek => player.Skills[lastActiveEvent.Activity].Experience,
+                TrackableEventType.BossOfTheWeek => player.Bosses[lastActiveEvent.Activity].KillCount == -1 ? 0 : player.Bosses[lastActiveEvent.Activity].KillCount,
+                TrackableEventType.SkillOfTheWeek => player.Skills[lastActiveEvent.Activity].Experience == -1 ? 0 : player.Skills[lastActiveEvent.Activity].Experience,
                 _ => throw new ArgumentOutOfRangeException(nameof(_type), _type, null)
             };
         }
