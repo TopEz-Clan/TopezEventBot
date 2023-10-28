@@ -11,7 +11,7 @@ namespace TopezEventBot.Modules.WildyWednesday;
 public class WildernessEventModule : SchedulableEventModuleBase
 {
     [SlashCommand("schedule", "Schedule a new wildy event")]
-    [RequireUserPermission(GuildPermission.KickMembers)]
+    [RequireRole("Coordinator")]
     public async Task StartWildyWednesday(WildyWednesdayActivityChoice activity, string location, DateTime time)
     {
         await ScheduleEvent((HiscoreField)activity, location, time);

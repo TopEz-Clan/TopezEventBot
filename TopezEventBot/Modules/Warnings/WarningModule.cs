@@ -16,14 +16,14 @@ public class WarningModule : InteractionModuleBase<SocketInteractionContext>
     }
 
     [SlashCommand("issue-warning", "Warns the user and adds a strike")]
-    [RequireUserPermission(GuildPermission.KickMembers)]
+    [RequireRole("Coordinator")]
     public async Task WarnUser(IUser user)
     {
         await RespondWithModalAsync<WarningModal>($"issue-warning-modal:{user.Id}");
     }
 
     [SlashCommand("set-warning-channel", "Sets the warning channel")]
-    [RequireUserPermission(GuildPermission.KickMembers)]
+    [RequireRole("Coordinator")]
     public async Task SetWarningChannel(IChannel channel)
     {
         using var scope = _scopeFactory.CreateScope();
@@ -102,7 +102,7 @@ public class WarningModule : InteractionModuleBase<SocketInteractionContext>
     }
 
     [SlashCommand("clear-user-warnings", "Clears the selected user of his warnings")]
-    [RequireUserPermission(GuildPermission.KickMembers)]
+    [RequireRole("Coordinator")]
     public async Task ClearUserWarningsCommand(IUser user)
     {
         await ClearUserWarnings(user);

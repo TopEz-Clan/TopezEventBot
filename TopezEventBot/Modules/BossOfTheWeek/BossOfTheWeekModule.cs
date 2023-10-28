@@ -18,35 +18,35 @@ public class BossOfTheWeekModule : TrackableEventModuleBase
     }
 
     [SlashCommand("wildy", "Start boss of the week")]
-    [RequireUserPermission(GuildPermission.KickMembers)]
+    [RequireRole("Coordinator")]
     public async Task StartWildernessBotw(WildyBosses boss, bool isActive = true)
     {
         await StartEvent((HiscoreField)boss, isActive);
     }
     
     [SlashCommand("group", "Start boss of the week")]
-    [RequireUserPermission(GuildPermission.KickMembers)]
+    [RequireRole("Coordinator")]
     public async Task StartGroupBotw(GroupBosses boss, bool isActive = true)
     {
         await StartEvent((HiscoreField)boss, isActive);
     }
     
     [SlashCommand("quest", "Start boss of the week")]
-    [RequireUserPermission(GuildPermission.KickMembers)]
+    [RequireRole("Coordinator")]
     public async Task StartQuestBotw(QuestBosses boss, bool isActive = true)
     {
         await StartEvent((HiscoreField)boss, isActive);
     }
     
     [SlashCommand("slayer", "Start boss of the week")]
-    [RequireUserPermission(GuildPermission.KickMembers)]
+    [RequireRole("Coordinator")]
     public async Task StartSlayerBotw(SlayerBosses boss, bool isActive = true)
     {
         await StartEvent((HiscoreField)boss, isActive);
     }
     
     [SlashCommand("world", "Start boss of the week")]
-    [RequireUserPermission(GuildPermission.KickMembers)]
+    [RequireRole("Coordinator")]
     public async Task StartWorldBotw(WorldBosses boss, bool isActive = true)
     {
         await StartEvent((HiscoreField)boss, isActive);
