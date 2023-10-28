@@ -64,8 +64,8 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
                 AccountLink = linkedAccount,
                 StartingPoint = _type switch
                 {
-                    TrackableEventType.BossOfTheWeek => player.Bosses[@event.Activity].KillCount,
-                    TrackableEventType.SkillOfTheWeek => player.Skills[@event.Activity].Experience,
+                    TrackableEventType.BossOfTheWeek => player.Bosses[@event.Activity].KillCount == -1 ? 0 : player.Bosses[@event.Activity].KillCount,
+                    TrackableEventType.SkillOfTheWeek => player.Skills[@event.Activity].Experience == -1 ? 0 : player.Skills[@event.Activity].Experience,
                     _ => throw new ArgumentOutOfRangeException()
                 }
             });
@@ -83,11 +83,16 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
             TrackableEventType.BossOfTheWeek => "Boss", TrackableEventType.SkillOfTheWeek => "Skill",
             _ => throw new ArgumentOutOfRangeException(nameof(_type), _type, null)
         };
+
         var startProgress = _type switch
         {
-            TrackableEventType.BossOfTheWeek => $"{player.Bosses[@event.Activity].KillCount} KC",
-            TrackableEventType.SkillOfTheWeek => $"{player.Skills[@event.Activity].Experience} XP",
-            _ => throw new ArgumentOutOfRangeException(nameof(_type), _type, "Unknown activity type")
+            TrackableEventType.BossOfTheWeek => player.Bosses[@event.Activity].KillCount == -1
+                ? 0
+                : player.Bosses[@event.Activity].KillCount,
+            TrackableEventType.SkillOfTheWeek => player.Skills[@event.Activity].Experience == -1
+                ? 0
+                : player.Skills[@event.Activity].Experience,
+            _ => throw new ArgumentOutOfRangeException()
         };
         var message =
             $"Registered {player.UserName} for {eventType} {@event.Activity.GetDisplayName()} with *{startProgress}*";
