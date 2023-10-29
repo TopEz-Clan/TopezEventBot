@@ -95,13 +95,13 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
                 : player.Skills[@event.Activity].Experience,
             _ => throw new ArgumentOutOfRangeException()
         };
+        
         var message =
-            $"Registered {player.UserName} for {eventType} {@event.Activity.GetDisplayName()} with *{startProgress}*";
+            $"Registered {player.UserName} for {eventType} {@event.Activity.GetDisplayName()} with *{startProgress} {_type.Unit()}*";
         await Context.Guild.ThreadChannels.FirstOrDefault(x => x.Id == threadId)?.SendMessageAsync(message)!;
         await FollowupAsync(message, ephemeral: true);
     }
 
-    [SlashCommand("finish", "Sets the last boss of the week command to inactive and compiles winner-data")]
     public async Task FinishEvent()
     {
         await using var scope = _scopeFactory.CreateAsyncScope();

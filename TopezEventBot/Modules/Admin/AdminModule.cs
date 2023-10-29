@@ -30,5 +30,19 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
             ((current, link) => current + MentionUtils.MentionUser(link.DiscordMemberId) +
                                 $" with rsn {link.RunescapeName}\n")), ephemeral: true);
     }
+
+    [RequireRole("Coordinator")]
+    [SlashCommand("delete-user-link", "unlink a user account by force")]
+    public async Task DeleteUserLink(long internalUserId)
+    {
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
+
+        await DeferAsync(ephemeral: true);
+        var user = db.AccountLinks.FirstOrDefault(x => x.Id == internalUserId);
+        db.AccountLinks.Remove(user);
+        await db.SaveChangesAsync();
+        await FollowupAsync($"Removed AccountLink for user {user.RunescapeName}", ephemeral: true);
+    }
     
 }
