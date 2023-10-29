@@ -23,6 +23,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<DiscordSocketClient>();       // Add the discord client to services
         services.AddSingleton<InteractionService>();        // Add the interaction service to services
         services.AddTransient<CheckForScheduledEventNotification>();
+        services.AddTransient<FetchEventProgressInvocable>();
         services.AddHostedService<DiscordStartupService>();
         services.AddHostedService<InteractionHandlingService>();
         services.AddHttpClient<IRunescapeHiscoreHttpClient, RunescapeHiscoreHttpClient>(client =>
@@ -50,6 +51,9 @@ host.Services.UseScheduler(scheduler =>
     scheduler
         .Schedule<CheckForScheduledEventNotification>()
         .EveryMinute();
+
+    scheduler.Schedule<FetchEventProgressInvocable>()
+        .EveryMinute().Once();
 });
 
 await UpdateDatabase(host);

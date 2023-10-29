@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TopezEventBot.Data.Context;
 
@@ -10,9 +11,11 @@ using TopezEventBot.Data.Context;
 namespace TopezEventBot.Data.Migrations
 {
     [DbContext(typeof(TopezContext))]
-    partial class TopezContextModelSnapshot : ModelSnapshot
+    [Migration("20231029185118_AddProgressToSchedulableEvent")]
+    partial class AddProgressToSchedulableEvent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.12");
@@ -97,6 +100,31 @@ namespace TopezEventBot.Data.Migrations
                     b.ToTable("SchedulableEventParticipation");
                 });
 
+            modelBuilder.Entity("TopezEventBot.Data.Entities.SchedulableEventProgress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("FetchedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Progress")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("TrackableEventParticipationAccountLinkId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("TrackableEventParticipationEventId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TrackableEventParticipationAccountLinkId", "TrackableEventParticipationEventId");
+
+                    b.ToTable("SchedulableEventProgress");
+                });
+
             modelBuilder.Entity("TopezEventBot.Data.Entities.TrackableEvent", b =>
                 {
                     b.Property<long>("Id")
@@ -141,31 +169,6 @@ namespace TopezEventBot.Data.Migrations
                     b.ToTable("TrackableEventParticipation");
                 });
 
-            modelBuilder.Entity("TopezEventBot.Data.Entities.TrackableEventProgress", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("FetchedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Progress")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long?>("TrackableEventParticipationAccountLinkId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long?>("TrackableEventParticipationEventId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TrackableEventParticipationAccountLinkId", "TrackableEventParticipationEventId");
-
-                    b.ToTable("TrackableEventProgress");
-                });
-
             modelBuilder.Entity("TopezEventBot.Data.Entities.Warning", b =>
                 {
                     b.Property<Guid>("Id")
@@ -206,6 +209,13 @@ namespace TopezEventBot.Data.Migrations
                     b.Navigation("Event");
                 });
 
+            modelBuilder.Entity("TopezEventBot.Data.Entities.SchedulableEventProgress", b =>
+                {
+                    b.HasOne("TopezEventBot.Data.Entities.TrackableEventParticipation", null)
+                        .WithMany("Progress")
+                        .HasForeignKey("TrackableEventParticipationAccountLinkId", "TrackableEventParticipationEventId");
+                });
+
             modelBuilder.Entity("TopezEventBot.Data.Entities.TrackableEventParticipation", b =>
                 {
                     b.HasOne("TopezEventBot.Data.Entities.AccountLink", "AccountLink")
@@ -223,13 +233,6 @@ namespace TopezEventBot.Data.Migrations
                     b.Navigation("AccountLink");
 
                     b.Navigation("Event");
-                });
-
-            modelBuilder.Entity("TopezEventBot.Data.Entities.TrackableEventProgress", b =>
-                {
-                    b.HasOne("TopezEventBot.Data.Entities.TrackableEventParticipation", null)
-                        .WithMany("Progress")
-                        .HasForeignKey("TrackableEventParticipationAccountLinkId", "TrackableEventParticipationEventId");
                 });
 
             modelBuilder.Entity("TopezEventBot.Data.Entities.AccountLink", b =>

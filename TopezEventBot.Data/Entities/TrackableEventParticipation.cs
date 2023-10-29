@@ -1,4 +1,6 @@
-﻿namespace TopezEventBot.Data.Entities;
+﻿using System.Collections.ObjectModel;
+
+namespace TopezEventBot.Data.Entities;
 
 public class TrackableEventParticipation
 {
@@ -11,4 +13,5 @@ public class TrackableEventParticipation
     
     public int StartingPoint { get; set; }
     public int EndPoint { get; set; }
+    public Collection<TrackableEventProgress> Progress { get; set; } = new();
 }
