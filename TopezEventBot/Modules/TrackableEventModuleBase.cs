@@ -102,6 +102,8 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         await FollowupAsync(message, ephemeral: true);
     }
 
+    [SlashCommand("finish", "Finish event")]
+    [RequireRole("Coordinator")]
     public async Task FinishEvent()
     {
         await using var scope = _scopeFactory.CreateAsyncScope();
