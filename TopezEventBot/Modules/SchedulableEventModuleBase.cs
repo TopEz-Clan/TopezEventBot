@@ -56,9 +56,9 @@ public abstract class SchedulableEventModuleBase : InteractionModuleBase<SocketI
 
     protected async Task HandleEventRegistration(long eventId)
     {
+        await DeferAsync();
         await using var scope = _scopeFactory.CreateAsyncScope();
         await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
-        await DeferAsync();
         var schedulableEvent = await db.SchedulableEvents
             .Include(x => x.EventParticipations)
             .ThenInclude(x => x.AccountLink)

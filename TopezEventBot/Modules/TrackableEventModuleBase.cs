@@ -149,7 +149,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         var result = participants.Select(p =>
             new EventResult(p.AccountLink.RunescapeName, p.StartingPoint, p.EndPoint, p.EndPoint - p.StartingPoint,
                 p.AccountLink.DiscordMemberId)
-        ).Take(3).OrderByDescending(x => x.Progress);
+        ).OrderByDescending(x => x.Progress).Take(3);
 
         var firstPlace = result.FirstOrDefault();
         await ReplyAsync(

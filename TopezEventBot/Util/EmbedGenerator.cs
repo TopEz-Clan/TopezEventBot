@@ -123,7 +123,7 @@ public class EmbedGenerator {
         return Generate(title, description, HiscoreField.Prayer, footer, fields.ToArray());
     }
     
-    public static Embed EventWinner(TrackableEventType type, HiscoreField activity, IOrderedEnumerable<EventResult> winners) {
+    public static Embed EventWinner(TrackableEventType type, HiscoreField activity, IEnumerable<EventResult> winners) {
         var title = $"Winner of this Weeks {type.GetDisplayName()} - @{winners.FirstOrDefault().RunescapeName}";
         var description = "As always, the 1st place winner of the competition will receive a prize, as well as a temporary in-game rank";
         var footer = new EmbedFooterBuilder
