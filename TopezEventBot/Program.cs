@@ -32,11 +32,11 @@ var host = Host.CreateDefaultBuilder(args)
         });
         services.AddScheduler();
         
-        services.AddDbContext<TopezContext>((services, opts) =>
+        services.AddDbContextFactory<TopezContext>((s, opts) =>
         {
-            var config = services.GetRequiredService<IConfiguration>();
+            var config = s.GetRequiredService<IConfiguration>();
             var connectionString = config.GetConnectionString("topez");
-            if (connectionString.Contains("%LOCALAPPDATA%"))
+            if (connectionString != null && connectionString.Contains("%LOCALAPPDATA%"))
             {
                 connectionString = connectionString.Replace("%LOCALAPPDATA%",
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));

@@ -1,5 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Microsoft.EntityFrameworkCore;
+using TopezEventBot.Data.Context;
 using TopezEventBot.Data.Entities;
 using TopezEventBot.Util;
 
@@ -8,7 +10,7 @@ namespace TopezEventBot.Modules.Mass;
 [Group("mass", "Command group for mass events")]
 public class MassEventModule : SchedulableEventModuleBase
 {
-    public MassEventModule(IServiceScopeFactory scopeFactory) : base(scopeFactory, SchedulableEventType.Mass)
+    public MassEventModule(IDbContextFactory<TopezContext> contextFactory) : base(contextFactory, SchedulableEventType.Mass)
     {
     }
     

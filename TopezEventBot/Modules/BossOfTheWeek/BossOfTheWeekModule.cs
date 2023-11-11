@@ -13,7 +13,7 @@ namespace TopezEventBot.Modules.BossOfTheWeek;
 [Group("botw", "Start boss of the week")]
 public class BossOfTheWeekModule : TrackableEventModuleBase
 {
-    public BossOfTheWeekModule(IServiceScopeFactory scopeFactory, IRunescapeHiscoreHttpClient rsClient) : base(scopeFactory, rsClient, TrackableEventType.BossOfTheWeek)
+    public BossOfTheWeekModule(IDbContextFactory<TopezContext> contextFactory, IRunescapeHiscoreHttpClient rsClient) : base(contextFactory, rsClient, TrackableEventType.BossOfTheWeek)
     {
     }
 

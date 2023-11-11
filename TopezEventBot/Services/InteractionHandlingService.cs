@@ -47,9 +47,8 @@ public class InteractionHandlingService : IHostedService
     {
         try
         {
-            var scope = _services.CreateScope();
             var context = new SocketInteractionContext(_discord, interaction);
-            var result = await _interactions.ExecuteCommandAsync(context, scope.ServiceProvider);
+            var result = await _interactions.ExecuteCommandAsync(context, _services);
 
             if (!result.IsSuccess)
                 await context.Channel.SendMessageAsync(result.ToString());

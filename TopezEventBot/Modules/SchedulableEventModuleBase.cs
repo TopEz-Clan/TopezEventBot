@@ -11,21 +11,18 @@ namespace TopezEventBot.Modules;
 
 public abstract class SchedulableEventModuleBase : InteractionModuleBase<SocketInteractionContext>
 {
-    protected readonly IServiceScopeFactory _scopeFactory;
+    private readonly IDbContextFactory<TopezContext> _contextFactory;
     private readonly SchedulableEventType _type;
-
-    protected SchedulableEventModuleBase(IServiceScopeFactory scopeFactory, SchedulableEventType type)
+    
+    protected SchedulableEventModuleBase(IDbContextFactory<TopezContext> contextFactory, SchedulableEventType type)
     {
-        _scopeFactory = scopeFactory;
+        _contextFactory = contextFactory;
         _type = type;
     }
 
     protected async Task ScheduleEvent(HiscoreField activity, string location, DateTime time)
     {
-        await using var scope = _scopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
-
-
+        await using var db = await _contextFactory.CreateDbContextAsync();
         await DeferAsync();
 
         var @event = await db.SchedulableEvents.AddAsync(new Data.Entities.SchedulableEvent()
@@ -57,8 +54,8 @@ public abstract class SchedulableEventModuleBase : InteractionModuleBase<SocketI
     protected async Task HandleEventRegistration(long eventId)
     {
         await DeferAsync();
-        await using var scope = _scopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
+        
+        await using var db = await _contextFactory.CreateDbContextAsync();
         var schedulableEvent = await db.SchedulableEvents
             .Include(x => x.EventParticipations)
             .ThenInclude(x => x.AccountLink)
@@ -102,8 +99,7 @@ public abstract class SchedulableEventModuleBase : InteractionModuleBase<SocketI
 
     protected async Task ListEventParticipants(long eventId)
     {
-        await using var scope = _scopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
+        await using var db = await _contextFactory.CreateDbContextAsync();
 
         await DeferAsync();
         var @event = db.SchedulableEvents.Include(x => x.Participants).FirstOrDefault(x => x.Id == eventId);

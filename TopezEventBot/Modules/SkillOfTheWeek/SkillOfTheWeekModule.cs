@@ -1,5 +1,7 @@
 using Discord;
 using Discord.Interactions;
+using Microsoft.EntityFrameworkCore;
+using TopezEventBot.Data.Context;
 using TopezEventBot.Data.Entities;
 using TopezEventBot.Http;
 using TopezEventBot.Util;
@@ -9,8 +11,8 @@ namespace TopezEventBot.Modules.SkillOfTheWeek;
 [Group("sotw", "All skill of the week related commands")]
 public class SkillOfTheWeekModule : TrackableEventModuleBase
 {
-    public SkillOfTheWeekModule(IServiceScopeFactory scopeFactory, IRunescapeHiscoreHttpClient rsClient) : base(
-        scopeFactory, rsClient, TrackableEventType.SkillOfTheWeek)
+    public SkillOfTheWeekModule(IDbContextFactory<TopezContext> contextFactory, IRunescapeHiscoreHttpClient rsClient) : base(
+        contextFactory, rsClient, TrackableEventType.SkillOfTheWeek)
     {
     }
 

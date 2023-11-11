@@ -17,7 +17,7 @@ public class WildernessEventModule : SchedulableEventModuleBase
         await ScheduleEvent((HiscoreField)activity, location, time);
     }
 
-    public WildernessEventModule(IServiceScopeFactory scopeFactory) : base(scopeFactory, SchedulableEventType.WildyWednesday)
+    public WildernessEventModule(IDbContextFactory<TopezContext> contextFactory) : base(contextFactory, SchedulableEventType.WildyWednesday)
     {
     }
 

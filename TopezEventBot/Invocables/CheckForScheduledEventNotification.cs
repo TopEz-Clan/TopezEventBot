@@ -13,13 +13,13 @@ namespace TopezEventBot.Invocables
 {
     public class CheckForScheduledEventNotification : IInvocable
     {
-        private readonly TopezContext _db;
+        private readonly IDbContextFactory<TopezContext> _ctxFactory;
         private readonly DiscordSocketClient _discordClient;
         private readonly ILogger<CheckForScheduledEventNotification> _logger;
 
-        public CheckForScheduledEventNotification(TopezContext db, DiscordSocketClient discordClient, ILogger<CheckForScheduledEventNotification> logger)
+        public CheckForScheduledEventNotification(IDbContextFactory<TopezContext> ctxFactory, DiscordSocketClient discordClient, ILogger<CheckForScheduledEventNotification> logger)
         {
-            _db = db;
+            _ctxFactory = ctxFactory;
             _discordClient = discordClient;
             _logger = logger;
         }
@@ -30,8 +30,9 @@ namespace TopezEventBot.Invocables
             // What is your invocable going to do?
             var startRange = DateTimeOffset.UtcNow.AddMinutes(-30);
             var endRange = DateTimeOffset.UtcNow.AddMinutes(30);
+            await using var ctx = await _ctxFactory.CreateDbContextAsync();
             var scheduledEventsInTimeFrame =
-                _db.SchedulableEvents
+                ctx.SchedulableEvents
                 .Include(x => x.EventParticipations)
                 .ThenInclude(x => x.AccountLink)
                 .AsEnumerable()
@@ -47,10 +48,10 @@ namespace TopezEventBot.Invocables
 
                     participant.Notified = true;
                 }
-                _db.UpdateRange(unnotifiedParticipants);
+                ctx.UpdateRange(unnotifiedParticipants);
             }
 
-            await _db.SaveChangesAsync();
+            await ctx.SaveChangesAsync();
         }
     }
 }

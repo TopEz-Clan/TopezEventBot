@@ -21,13 +21,15 @@ public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteracti
     
     [SlashCommand("unlink-rsn", "Unlinks your runescape username from your discord account")]
     [RequireUserPermission(GuildPermission.ViewChannel)]
-    public async Task UnlinkRunescapeAccount() {
+    public async Task UnlinkRunescapeAccount()
+    {
+        await DeferAsync();
         await using var scope = _provider.CreateAsyncScope();
         await using var ctx = scope.ServiceProvider.GetRequiredService<TopezContext>();
         var account = await ctx.AccountLinks.FirstOrDefaultAsync(x => x.DiscordMemberId == Context.User.Id);
         if (account == null)
         {
-            await Context.Interaction.RespondAsync("You got no account linked to your discord id. " +
+            await Context.Interaction.FollowupAsync("You got no account linked to your discord id. " +
                                                    "Please Link your runescape accout with the */link-rsn* command", ephemeral: true);
             return;
         }
@@ -35,7 +37,7 @@ public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteracti
         var unlinkedAccount = ctx.AccountLinks.Remove(account);
         var deleted = await ctx.SaveChangesAsync();
 
-        await Context.Interaction.RespondAsync(deleted > 0
+        await Context.Interaction.FollowupAsync(deleted > 0
             ? $"Unlinked Account {unlinkedAccount.Entity.RunescapeName} "
             : "There was an error unlinking your runescape account, please try again in a few seconds", ephemeral: true);
     }

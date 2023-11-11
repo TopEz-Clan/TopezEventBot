@@ -14,22 +14,21 @@ namespace TopezEventBot.Modules;
 
 public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInteractionContext>
 {
-    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IDbContextFactory<TopezContext> _contextFactory;
     private readonly IRunescapeHiscoreHttpClient _rsClient;
     private readonly TrackableEventType _type;
 
-    protected TrackableEventModuleBase(IServiceScopeFactory scopeFactory, IRunescapeHiscoreHttpClient rsClient,
+    protected TrackableEventModuleBase(IDbContextFactory<TopezContext> contextFactory, IRunescapeHiscoreHttpClient rsClient,
         TrackableEventType type)
     {
-        _scopeFactory = scopeFactory;
+        _contextFactory = contextFactory;
         _rsClient = rsClient;
         _type = type;
     }
 
     protected async Task RegisterForEvent(long eventId, ulong threadId)
     {
-        await using var scope = _scopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
+        await using var db = await _contextFactory.CreateDbContextAsync();
         await DeferAsync();
         var @event = db.TrackableEvents.FirstOrDefault(e => e.Id == eventId);
         var memberId = Context.User.Id;
@@ -106,8 +105,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
     [RequireRole("Coordinator")]
     public async Task FinishEvent()
     {
-        await using var scope = _scopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
+        await using var db = await _contextFactory.CreateDbContextAsync();
 
         await DeferAsync();
         var lastActiveEvent = db.TrackableEvents.Where(x => x.Type == _type)
@@ -115,6 +113,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
             .ThenInclude(p => p.AccountLink)
             .OrderByDescending(x => x.Id)
             .FirstOrDefault();
+        
         if (lastActiveEvent == null)
         {
             await FollowupAsync($"There's no active {_type.GetDisplayName()} event ongoing!", ephemeral: true);
@@ -160,9 +159,8 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
 
     protected async Task StartEvent(HiscoreField activity, bool isActive = true)
     {
-        await using var scope = _scopeFactory.CreateAsyncScope();
-        await using var ctx = scope.ServiceProvider.GetRequiredService<TopezContext>();
-        var eventId = await ctx.CreateEvent(_type, activity, isActive);
+        await using var db = await _contextFactory.CreateDbContextAsync();
+        var eventId = await db.CreateEvent(_type, activity, isActive);
         var componentBuilder = new ComponentBuilder();
         var threadId = await NewThreadInCurrentChannelAsync(activity, _type);
         var eventAbbrev = _type switch
@@ -200,8 +198,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
 
     protected async Task ListEventParticipants(long eventId)
     {
-        await using var scope = _scopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
+        await using var db = await _contextFactory.CreateDbContextAsync();
 
         await DeferAsync();
         
@@ -235,8 +232,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
     [RequireUserPermission(GuildPermission.ViewChannel)]
     public async Task Leaderboard()
     {
-        await using var scope = _scopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
+        await using var db = await _contextFactory.CreateDbContextAsync();
 
         await DeferAsync();
         var playerScores = new Dictionary<string, int>();
