@@ -14,21 +14,48 @@ public class Player
 
 public class SkillStats
 {
+    private readonly int _experience;
+    private readonly int _level;
+    private readonly int _rank;
 
     [Index(0)]
-    public int Rank { get; init; }
-    [Index(1)]
-    public int Level { get; init; }
-    [Index(2)]
-    public int Experience { get; init; }
+    public int Rank
+    {
+        get => _rank;
+        init => _rank = value == -1 ? 0 : value;
+    }
 
+    [Index(1)]
+    public int Level
+    {
+        get => _level;
+        init => _level = value == -1 ? 0 : value;
+    }
+
+    [Index(2)]
+    public int Experience
+    {
+        get => _experience;
+        init => _experience = value == -1 ? 0 : value;
+    }
 }
 
 public class ActivityStats
 {
+    private readonly int _killCount;
+    private readonly int _rank;
 
     [Index(0)]
-    public int Rank { get; init; }
+    public int Rank
+    {
+        get => _rank;
+        init => _rank = ( value == -1) ? 0 : value;
+    }
+
     [Index(1)]
-    public int KillCount { get; init; }
+    public int KillCount
+    {
+        get => _killCount;
+        init => _killCount = (value == -1) ? 0 : value;
+    }
 }
