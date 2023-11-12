@@ -11,77 +11,94 @@ namespace TopezEventBot.Modules.Register;
 public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IRunescapeHiscoreHttpClient _client;
-    private readonly IServiceProvider _provider;
+    private readonly IDbContextFactory<TopezContext> _contextFactory;
 
-    public RegisterRunescapeNameModule(IRunescapeHiscoreHttpClient client, IServiceProvider provider)
+    public RegisterRunescapeNameModule(IRunescapeHiscoreHttpClient client, IDbContextFactory<TopezContext> contextFactory)
     {
         _client = client;
-        _provider = provider;
+        _contextFactory = contextFactory;
     }
     
     [SlashCommand("unlink-rsn", "Unlinks your runescape username from your discord account")]
     [RequireUserPermission(GuildPermission.ViewChannel)]
     public async Task UnlinkRunescapeAccount()
     {
-        await DeferAsync();
-        await using var scope = _provider.CreateAsyncScope();
-        await using var ctx = scope.ServiceProvider.GetRequiredService<TopezContext>();
-        var account = await ctx.AccountLinks.FirstOrDefaultAsync(x => x.DiscordMemberId == Context.User.Id);
-        if (account == null)
+        await DeferAsync(ephemeral: true);
+        await using var ctx = await _contextFactory.CreateDbContextAsync();
+        var activeAccount = await ctx.AccountLinks.FirstOrDefaultAsync(x => x.DiscordMemberId == Context.User.Id && x.IsActive);
+        if (activeAccount == null)
         {
-            await Context.Interaction.FollowupAsync("You got no account linked to your discord id. " +
+            await FollowupAsync("You got no account or active accounts  to your discord id. " +
                                                    "Please Link your runescape accout with the */link-rsn* command", ephemeral: true);
             return;
         }
 
-        var unlinkedAccount = ctx.AccountLinks.Remove(account);
+        activeAccount.IsActive = false;
+        ctx.AccountLinks.Update(activeAccount);
         var deleted = await ctx.SaveChangesAsync();
 
-        await Context.Interaction.FollowupAsync(deleted > 0
-            ? $"Unlinked Account {unlinkedAccount.Entity.RunescapeName} "
+        await FollowupAsync(deleted > 0
+            ? $"Set Account {activeAccount.RunescapeName} inactive"
             : "There was an error unlinking your runescape account, please try again in a few seconds", ephemeral: true);
     }
-    
-    
 
     [SlashCommand("link-rsn", "Link your runescape name!")]
     [RequireUserPermission(GuildPermission.ViewChannel)]
     public async Task RegisterRunescapeName()
     {
-        using var scope = _provider.CreateScope();
-        await using var ctx = scope.ServiceProvider.GetRequiredService<TopezContext>();
-        var memberId = Context.User.Id;
-        var accountLinked = ctx.AccountLinks.Any(x => x.DiscordMemberId == memberId);
-
-        if (accountLinked)
-            await Context.Interaction.RespondAsync("You already got a linked account!", ephemeral: true);
-        else
-            await Context.Interaction.RespondWithModalAsync<RegisterRunescapeNameModal>("link_rsn_modal");
+        await RespondWithModalAsync<RegisterRunescapeNameModal>("link_rsn_modal");
     }
 
 
     [ModalInteraction("link_rsn_modal")]
     public async Task LinkModalResponse(RegisterRunescapeNameModal modal)
     {
+        await DeferAsync(ephemeral: true);
         var rsn = modal.AccountName;
         var player = await _client.LoadPlayer(rsn);
         var componentBuilder = new ComponentBuilder()
             .WithButton("That's me", $"confirm-rsn-button:{rsn}", ButtonStyle.Success)
             .WithButton("Nope, not me!", "not-me-button", ButtonStyle.Danger);
 
-        await RespondAsync(embed: EmbedGenerator.Player(player), text: "Is this you?",
+        await FollowupAsync(embed: EmbedGenerator.Player(player), text: "Is this you?",
             components: componentBuilder.Build(), ephemeral: true);
     }
 
     [ComponentInteraction("confirm-rsn-button:*")]
     public async Task ConfirmUsernameButton(string rsn)
     {
-        await using var scope = _provider.CreateAsyncScope();
-        await using var ctx = scope.ServiceProvider.GetRequiredService<TopezContext>();
-        var member = Context.User.Id;
-        ctx.AccountLinks.Add(new AccountLink { DiscordMemberId = member, RunescapeName = rsn });
+        await DeferAsync(ephemeral: true);
+        await using var ctx = await _contextFactory.CreateDbContextAsync();
+        var memberId = Context.User.Id;
+        var existingLinkedAccount = await ctx.AccountLinks.FirstOrDefaultAsync(x =>
+            x.DiscordMemberId == memberId &&
+            string.Equals(x.RunescapeName, rsn, StringComparison.CurrentCultureIgnoreCase) && x.IsActive);
+        
+        if (existingLinkedAccount is { IsActive: true })
+        {
+            await FollowupAsync("This account is already your linked, active account!", ephemeral: true);
+            return;
+        }
+
+        var linkedAccounts = ctx.AccountLinks.Where(x => x.DiscordMemberId == memberId);
+        foreach (var linkedAccount in linkedAccounts)
+        {
+            linkedAccount.IsActive = false;
+        }
+        
+        ctx.UpdateRange(linkedAccounts);
+        if (existingLinkedAccount == null)
+        {
+            ctx.AccountLinks.Add(new AccountLink { DiscordMemberId = memberId, RunescapeName = rsn, IsActive = true});
+        }
+        else
+        {
+            existingLinkedAccount.IsActive = true;
+            ctx.Update(existingLinkedAccount);
+        }
+        
         var count = await ctx.SaveChangesAsync();
-        await Context.Interaction.RespondAsync(count > 0
+        await FollowupAsync(count > 0
             ? $"Account {rsn} successfully linked!"
             : "Problem while linking account!", ephemeral: true);
     }
@@ -89,6 +106,6 @@ public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteracti
     [ComponentInteraction("not-me-button")]
     public async Task NotMeButtonResponse()
     {
-        await Context.Interaction.RespondAsync("So that's not your account, linking has been stopped!");
+        await RespondAsync("So that's not your account, linking has been stopped!");
     }
 }

@@ -32,7 +32,7 @@ public class FetchEventProgressInvocable : IInvocable
         foreach (var activeEvent in activeEvents)
         {
             Parallel.ForEach(activeEvent.EventParticipations,
-                new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount }, async 
+                new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, async 
                     participant =>
                     {
                         var hiscoreData = await _hiscoreClient.LoadPlayer(participant.AccountLink.RunescapeName);

@@ -7,6 +7,8 @@ public class AccountLink
     public long Id { get; set; }
     public ulong DiscordMemberId { get; set; }
     public string RunescapeName { get; set; }
+    
+    public bool IsActive { get; set; } = true;
 
     public Collection<SchedulableEventParticipation> SchedulableEventParticipations { get; set; } = new();
     public Collection<TrackableEventParticipation> TrackableEventParticipations { get; set; } = new();
