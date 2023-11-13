@@ -17,7 +17,7 @@ public class EmbedGenerator {
                 Author = new EmbedAuthorBuilder()
                 {
                     Name = "TopEz Staff Team",
-                    IconUrl = Constants.TOPEZ_LOGO_URL,
+                    IconUrl = Constants.TopezLogoUrl,
                     Url = null
                 },
                 Title = title,
@@ -39,7 +39,7 @@ public class EmbedGenerator {
     public static Embed WildyWednesday(HiscoreField activity, string location, DateTime startTime) {
         var description = "As always, use the *REGISTER* button down below if you're planning on coming so we have an idea on how many members are joining.";
         var title = $"Wildy Wednesday - {activity.GetDisplayName()}";
-        var footer = new EmbedFooterBuilder { Text = "For non-pkers: Toggle PK Skull Prevention in settings! Only risk what you can afford to lose.",  IconUrl = Constants.INFORMATIONAL_FOOTER_LOGO_URL };
+        var footer = new EmbedFooterBuilder { Text = "For non-pkers: Toggle PK Skull Prevention in settings! Only risk what you can afford to lose.",  IconUrl = Constants.InformationalFooterLogoUrl };
         var fields = new EmbedFieldBuilder[]{
                 Field("This week's boss:", activity.GetDisplayName(), true),
                 Field("Where to meet:", "*" + location + "*", true),
@@ -58,7 +58,7 @@ public class EmbedGenerator {
             Field("Event Start:", $"*{startTime.ToUniversalTime():f} UTC*", true),
             Field("Splitting Rules:", "Split all big drops between participants of the kill; Free For All on the rest of the drops.", false),
         };
-        var footer = new EmbedFooterBuilder { Text = "Check out #setups-and-guides if you're unsure what to bring!", IconUrl = Constants.INFORMATIONAL_FOOTER_LOGO_URL};
+        var footer = new EmbedFooterBuilder { Text = "Check out #setups-and-guides if you're unsure what to bring!", IconUrl = Constants.InformationalFooterLogoUrl};
         return Generate(title, description, activity, footer, fields); 
     }
     
@@ -81,7 +81,7 @@ public class EmbedGenerator {
         };
         var footer = new EmbedFooterBuilder()
         {
-            IconUrl = Constants.INFORMATIONAL_FOOTER_LOGO_URL,
+            IconUrl = Constants.InformationalFooterLogoUrl,
             Text = "Please head over to the specified location"
         };
         return Generate(title, description, @event.Activity, footer, fields);
@@ -95,14 +95,14 @@ public class EmbedGenerator {
                 Field("Prize:", "A bond for ironmen, or GP equivalent for a main account", false) ,
         };
         
-        var footer = new EmbedFooterBuilder { Text = "Be sure to include the code-word in your starting screenshot or you will not be eligible to win!", IconUrl = Constants.INFORMATIONAL_FOOTER_LOGO_URL };
+        var footer = new EmbedFooterBuilder { Text = "Be sure to include the code-word in your starting screenshot or you will not be eligible to win!", IconUrl = Constants.InformationalFooterLogoUrl };
         return Generate(title, description, skill, footer, fields);
     }
     //
     public static Embed BossOfTheWeek(HiscoreField boss) {
         var title = $"Boss of the Week - {boss.GetDisplayName()}";
         var description = "As always, the 1st place winner of the competition will receive a prize, as well as a temporary in-game rank. This event will last a week, so good luck!";
-        var footer = new EmbedFooterBuilder { Text = "Be sure to include the code-word in your starting screenshot or you will not be eligible to win!", IconUrl = Constants.INFORMATIONAL_FOOTER_LOGO_URL };
+        var footer = new EmbedFooterBuilder { Text = "Be sure to include the code-word in your starting screenshot or you will not be eligible to win!", IconUrl = Constants.InformationalFooterLogoUrl };
         var fields = new EmbedFieldBuilder[] {
                 Field("This week's boss:", boss.GetDisplayName(), true),
                 Field("Prize:", "A bond for ironmen, or the GP equivalent for a main account", false),
@@ -116,7 +116,7 @@ public class EmbedGenerator {
         var footer = new EmbedFooterBuilder
         {
             Text = "Be sure to include the code-word in your starting screenshot or you will not be eligible to win!",
-           IconUrl = Constants.INFORMATIONAL_FOOTER_LOGO_URL,
+           IconUrl = Constants.InformationalFooterLogoUrl,
         };
         var fields = player.Skills.Select(skill => new EmbedFieldBuilder { IsInline = true, Name = skill.Key.ToString(), Value = skill.Value.Level }).ToList();
 
@@ -129,7 +129,7 @@ public class EmbedGenerator {
         var footer = new EmbedFooterBuilder
         {
             Text = "Congratulation! Hit up the Mod Team to claim your price",
-           IconUrl = Constants.INFORMATIONAL_FOOTER_LOGO_URL,
+           IconUrl = Constants.InformationalFooterLogoUrl,
         };
         var idx = 0;
 

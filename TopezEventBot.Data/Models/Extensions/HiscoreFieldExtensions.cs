@@ -13,13 +13,13 @@ public static class HiscoreFieldExtensions
     public static string GetBannerUrl(this HiscoreField field)
     {
         var lookupData = GetAttr(field);
-        return lookupData != null ? lookupData.BannerUrl : Constants.INFORMATIONAL_FOOTER_LOGO_URL;
+        return lookupData != null ? lookupData.BannerUrl : Constants.InformationalFooterLogoUrl;
     }
     
     public static string GetThumbnailUrl(this HiscoreField field)
     {
         var lookupData = GetAttr(field);
-        return lookupData != null ? lookupData.ThumbnailUrl : Constants.TOPEZ_LOGO_URL;
+        return lookupData != null ? lookupData.ThumbnailUrl : Constants.TopezLogoUrl;
     }
     
     private static LookupAttribute? GetAttr(HiscoreField f)

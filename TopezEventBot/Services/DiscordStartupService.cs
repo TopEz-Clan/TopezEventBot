@@ -16,6 +16,7 @@ public class DiscordStartupService : IHostedService
         _logger = logger;
         _discordSocketClient = discordSocketClient;
         _config = config;
+        _discordSocketClient.Log += msg => LogHelper.OnLogAsync(_logger, msg);
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)

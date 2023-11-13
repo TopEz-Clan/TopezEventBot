@@ -34,7 +34,6 @@ public class InteractionHandlingService : IHostedService
         await _interactions.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
         _discord.Ready += () => _interactions.RegisterCommandsGloballyAsync(true);
         _discord.InteractionCreated += OnInteractionAsync;
-
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -84,7 +83,6 @@ public static class LogHelper
             case LogSeverity.Error:
                 logger.LogError(msg.ToString());
                 break;
-
             case LogSeverity.Critical:
                 logger.LogCritical(msg.ToString());
                 break;

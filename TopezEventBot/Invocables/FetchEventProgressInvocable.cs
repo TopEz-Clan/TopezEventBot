@@ -27,7 +27,7 @@ public class FetchEventProgressInvocable : IInvocable
             .ThenInclude(x => x.AccountLink)
             .Include(x => x.EventParticipations)
             .ThenInclude(x => x.Progress)
-            .Where(x => x.IsActive);
+            .Where(x => x.IsActive).AsSplitQuery();
         
         foreach (var activeEvent in activeEvents)
         {

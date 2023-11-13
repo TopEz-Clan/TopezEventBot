@@ -35,6 +35,7 @@ namespace TopezEventBot.Invocables
                 ctx.SchedulableEvents
                 .Include(x => x.EventParticipations)
                 .ThenInclude(x => x.AccountLink)
+                .AsSplitQuery()
                 .AsEnumerable()
                 .Where(x => x.ScheduledAt.UtcDateTime >= startRange.UtcDateTime && x.ScheduledAt.UtcDateTime < endRange.UtcDateTime);
 
