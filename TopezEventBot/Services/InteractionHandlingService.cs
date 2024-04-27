@@ -79,7 +79,6 @@ public static class LogHelper
             case LogSeverity.Warning:
                 logger.LogWarning(msg.ToString());
                 break;
-
             case LogSeverity.Error:
                 logger.LogError(msg.ToString());
                 break;

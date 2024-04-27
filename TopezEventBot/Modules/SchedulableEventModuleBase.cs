@@ -13,7 +13,7 @@ public abstract class SchedulableEventModuleBase : InteractionModuleBase<SocketI
 {
     private readonly IDbContextFactory<TopezContext> _contextFactory;
     private readonly SchedulableEventType _type;
-    
+
     protected SchedulableEventModuleBase(IDbContextFactory<TopezContext> contextFactory, SchedulableEventType type)
     {
         _contextFactory = contextFactory;
@@ -40,35 +40,37 @@ public abstract class SchedulableEventModuleBase : InteractionModuleBase<SocketI
 
 
         var listParticipantsBtnCustomId = $"list-participants-{_type.GetShortIdentifier()}:{@event.Entity.Id}";
-        
+
         var components = new ComponentBuilder().WithButton("Register", registerButtonCustomId, ButtonStyle.Success).WithButton("List participants", listParticipantsBtnCustomId, ButtonStyle.Secondary);
         await FollowupAsync(embed: GetEmbed(activity, location, time), components: components.Build());
     }
-    
+
     protected abstract Embed GetEmbed(HiscoreField activity, string location, DateTime time);
 
     public abstract Task HandleRegistration(long eventId);
-    
+
     public abstract Task ListParticipants(long eventId);
 
     protected async Task HandleEventRegistration(long eventId)
     {
-        await DeferAsync();
-        
+        await DeferAsync(ephemeral: true);
+
         await using var db = await _contextFactory.CreateDbContextAsync();
         var schedulableEvent = await db.SchedulableEvents
             .Include(x => x.EventParticipations)
             .ThenInclude(x => x.AccountLink)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(x => x.Id == eventId);
+
         if (schedulableEvent == null)
         {
-            await FollowupAsync("The event you're trying to register for has been deleted!");
+            await FollowupAsync("The event you're trying to register for has been deleted!", ephemeral: true);
             return;
         }
 
         if (schedulableEvent.EventParticipations.Any(x => x.AccountLink.DiscordMemberId == Context.User.Id))
         {
-            await FollowupAsync("You're already registered for this event!");
+            await FollowupAsync("You're already registered for this event!", ephemeral: true);
             return;
         }
 
@@ -76,13 +78,13 @@ public abstract class SchedulableEventModuleBase : InteractionModuleBase<SocketI
         if (accountLink == null)
         {
             await FollowupAsync(
-                "You haven't linked your runescape account yet. Please link it by using the ```/link-rsn``` command!");
+                    "You haven't linked your runescape account yet. Please link it by using the ```/link-rsn``` command!", ephemeral: true);
             return;
         }
 
         schedulableEvent.EventParticipations.Add(new SchedulableEventParticipation()
         {
-         AccountLink = accountLink,
+            AccountLink = accountLink,
         });
 
         db.SchedulableEvents.Update(schedulableEvent);
@@ -94,15 +96,20 @@ public abstract class SchedulableEventModuleBase : InteractionModuleBase<SocketI
             return;
         }
 
-        await FollowupAsync("There's been a problem with your registration, please try again later!");
+        await FollowupAsync("There's been a problem with your registration, please try again later!", ephemeral: true);
     }
 
     protected async Task ListEventParticipants(long eventId)
     {
         await using var db = await _contextFactory.CreateDbContextAsync();
 
-        await DeferAsync();
-        var @event = db.SchedulableEvents.Include(x => x.Participants).FirstOrDefault(x => x.Id == eventId);
+        await DeferAsync(ephemeral: true);
+        var @event = db
+            .SchedulableEvents
+            .AsNoTracking()
+            .Include(x => x.Participants)
+            .AsSplitQuery()
+            .FirstOrDefault(x => x.Id == eventId);
 
         if (@event == null)
         {

@@ -65,7 +65,8 @@ public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteracti
         var rsn = modal.AccountName;
         var player = await _client.LoadPlayer(rsn);
         if (player != null) _logger.LogInformation("Successfully fetched player information for rsn {accountName}!", modal.AccountName);
-        else {
+        else
+        {
             _logger.LogInformation("Fetching player information for rsn {accountName} failed!", modal.AccountName);
             await FollowupAsync(text: "Fetching hiscore stats failed, aborting!", ephemeral: true);
             return;
@@ -87,7 +88,7 @@ public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteracti
         var memberId = Context.User.Id;
         var existingLinkedAccount = await ctx.AccountLinks.FirstOrDefaultAsync(x =>
             x.DiscordMemberId == memberId &&
-            string.Equals(x.RunescapeName, rsn, StringComparison.CurrentCultureIgnoreCase));
+            x.RunescapeName.ToLower() == rsn.ToLower());
 
         if (existingLinkedAccount is { IsActive: true })
         {
@@ -123,7 +124,7 @@ public class RegisterRunescapeNameModule : InteractionModuleBase<SocketInteracti
             ? $"Account {rsn} successfully linked!"
             : "Problem while linking account!", ephemeral: true);
     }
- 
+
     [ComponentInteraction("not-me-button:*")]
     public async Task NotMeButtonResponse(string rsn)
     {

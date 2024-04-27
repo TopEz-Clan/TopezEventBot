@@ -1,6 +1,5 @@
 using Coravel;
 using Discord;
-using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
@@ -32,7 +31,7 @@ var host = Host.CreateDefaultBuilder(args)
             client.BaseAddress = new Uri("https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws");
         });
         services.AddScheduler();
-        
+
         services.AddDbContextFactory<TopezContext>((s, opts) =>
         {
             var config = s.GetRequiredService<IConfiguration>();

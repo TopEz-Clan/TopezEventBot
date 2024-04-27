@@ -16,22 +16,22 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
     }
 
     [RequireRole("Coordinator")]
-    [SlashCommand( "linked-accounts", "Gets a list of all users with linked runescape accounts")]
+    [SlashCommand("linked-accounts", "Gets a list of all users with linked runescape accounts")]
     public async Task GetLinkedUsers()
     {
         await using var scope = _scopeFactory.CreateAsyncScope();
         await using var db = scope.ServiceProvider.GetRequiredService<TopezContext>();
 
         await DeferAsync(ephemeral: true);
-        var linkedAccounts = await db.AccountLinks.ToListAsync();
+        var linkedAccounts = await db.AccountLinks.AsNoTracking().ToListAsync();
 
         var result = $"Currently there are {linkedAccounts.Count()} linked accounts: \n";
         await FollowupAsync(linkedAccounts.Aggregate(result,
             ((current, link) => current + MentionUtils.MentionUser(link.DiscordMemberId) +
-                                $" with rsn {link.RunescapeName}\n")), ephemeral: true);
+                                $" with rsn {link.RunescapeName} - active: {link.IsActive}\n")), ephemeral: true);
     }
 
-    [RequireRole("Coordinator")]
+    [RequireRole("Management")]
     [SlashCommand("delete-user-link", "unlink a user account by force")]
     public async Task DeleteUserLink(long internalUserId)
     {
@@ -40,9 +40,14 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
 
         await DeferAsync(ephemeral: true);
         var user = db.AccountLinks.FirstOrDefault(x => x.Id == internalUserId);
-        db.AccountLinks.Remove(user);
+        if (user == null)
+        {
+            await FollowupAsync("This account doesn't exist in the database!");
+            return;
+        }
+        db.AccountLinks.Remove(user!);
         await db.SaveChangesAsync();
         await FollowupAsync($"Removed AccountLink for user {user.RunescapeName}", ephemeral: true);
     }
-    
+
 }

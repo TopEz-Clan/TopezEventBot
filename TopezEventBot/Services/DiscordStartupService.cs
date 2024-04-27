@@ -1,6 +1,5 @@
 using Discord;
 using Discord.WebSocket;
-using TopezEventBot.Http;
 
 namespace TopezEventBot;
 
@@ -10,7 +9,6 @@ public class DiscordStartupService : IHostedService
     private readonly IConfiguration _config;
     private readonly ILogger<DiscordStartupService> _logger;
 
-    
     public DiscordStartupService(ILogger<DiscordStartupService> logger, DiscordSocketClient discordSocketClient, IConfiguration config)
     {
         _logger = logger;

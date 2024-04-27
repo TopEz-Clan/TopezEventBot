@@ -6,7 +6,6 @@ using TopezEventBot.Data.Entities;
 using TopezEventBot.Data.Extensions;
 using TopezEventBot.Data.Models.Extensions;
 using TopezEventBot.Http;
-using TopezEventBot.Http.Models;
 using TopezEventBot.Util;
 using TopezEventBot.Util.Extensions;
 
@@ -19,7 +18,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
     private readonly TrackableEventType _eventType;
 
     protected TrackableEventModuleBase(IDbContextFactory<TopezContext> contextFactory, IRunescapeHiscoreHttpClient rsClient,
-        TrackableEventType eventType)
+            TrackableEventType eventType)
     {
         _contextFactory = contextFactory;
         _rsClient = rsClient;
@@ -29,14 +28,14 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
     protected async Task RegisterForEvent(long eventId, ulong threadId)
     {
         await using var db = await _contextFactory.CreateDbContextAsync();
-        await DeferAsync();
+        await DeferAsync(ephemeral: true);
         var @event = db.TrackableEvents.FirstOrDefault(e => e.Id == eventId);
         var memberId = Context.User.Id;
         var linkedAccount = db.AccountLinks.FirstOrDefault(x => x.DiscordMemberId == memberId);
         if (@event == null)
         {
             await FollowupAsync("It seems this event has been deleted, please contact the Coordinator team",
-                ephemeral: true);
+                    ephemeral: true);
             return;
         }
 
@@ -49,8 +48,8 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         if (linkedAccount == null)
         {
             await FollowupAsync(
-                "You have no linked account yet - please link your runescape account first with the */link-rsn* command",
-                ephemeral: true);
+                    "You have no linked account yet - please link your runescape account first with the */link-rsn* command",
+                    ephemeral: true);
             return;
         }
 
@@ -80,7 +79,8 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
 
         var eventType = _eventType switch
         {
-            TrackableEventType.BossOfTheWeek => "Boss", TrackableEventType.SkillOfTheWeek => "Skill",
+            TrackableEventType.BossOfTheWeek => "Boss",
+            TrackableEventType.SkillOfTheWeek => "Skill",
             _ => throw new ArgumentOutOfRangeException(nameof(_eventType), _eventType, null)
         };
 
@@ -90,7 +90,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
             TrackableEventType.SkillOfTheWeek => player.Skills[@event.Activity].Experience,
             _ => throw new ArgumentOutOfRangeException()
         };
-        
+
         var message =
             $"Registered {player.UserName} for {eventType} {@event.Activity.GetDisplayName()} with *{startProgress} {_eventType.Unit()}*";
         await Context.Guild.ThreadChannels.FirstOrDefault(x => x.Id == threadId)?.SendMessageAsync(message)!;
@@ -109,7 +109,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
             .ThenInclude(p => p.AccountLink)
             .OrderByDescending(x => x.Id)
             .FirstOrDefault();
-        
+
         if (lastActiveEvent == null)
         {
             await FollowupAsync($"There's no active {_eventType.GetDisplayName()} event ongoing!", ephemeral: true);
@@ -125,32 +125,31 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
             await FollowupAsync("Sadly there were no participants this time! :(");
             return;
         }
-        
-        await Parallel.ForEachAsync(participants, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount } , async (participation, token) =>
-        {
-            var player = await _rsClient.LoadPlayer(participation.AccountLink.RunescapeName);
-            participation.EndPoint = _eventType switch
-            {
-                TrackableEventType.BossOfTheWeek => player.Bosses[lastActiveEvent.Activity].KillCount,
-                TrackableEventType.SkillOfTheWeek => player.Skills[lastActiveEvent.Activity].Experience,
-                _ => throw new ArgumentOutOfRangeException(nameof(_eventType), _eventType, null)
-            };
-        });
+
+        await Parallel.ForEachAsync(participants, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, async (participation, token) =>
+                {
+                    var player = await _rsClient.LoadPlayer(participation.AccountLink.RunescapeName);
+                    participation.EndPoint = _eventType switch
+                    {
+                        TrackableEventType.BossOfTheWeek => player.Bosses[lastActiveEvent.Activity].KillCount,
+                        TrackableEventType.SkillOfTheWeek => player.Skills[lastActiveEvent.Activity].Experience,
+                        _ => throw new ArgumentOutOfRangeException(nameof(_eventType), _eventType, null)
+                    };
+                });
 
         db.UpdateRange(participants);
         await db.SaveChangesAsync();
 
-
         var result = participants.Select(p =>
-            new EventResult(p.AccountLink.RunescapeName, p.StartingPoint, p.EndPoint, p.EndPoint - p.StartingPoint,
-                p.AccountLink.DiscordMemberId)
-        ).OrderByDescending(x => x.Progress).Take(3);
+                new EventResult(p.AccountLink.RunescapeName, p.StartingPoint, p.EndPoint, p.EndPoint - p.StartingPoint,
+                    p.AccountLink.DiscordMemberId)
+                ).OrderByDescending(x => x.Progress).Take(3);
 
         var firstPlace = result.FirstOrDefault();
         await ReplyAsync(
-            $"Winner of this weeks {_eventType.GetDisplayName()} is {MentionUtils.MentionUser(firstPlace.DiscordUserDisplayName)} with {firstPlace.Progress} {_eventType.Unit()}! Congratulations!",
-            allowedMentions: AllowedMentions.All);
-        await FollowupAsync( embed: EmbedGenerator.EventWinner(_eventType, lastActiveEvent.Activity, result));
+                $"Winner of this weeks {_eventType.GetDisplayName()} is {MentionUtils.MentionUser(firstPlace.DiscordUserDisplayName)} with {firstPlace.Progress} {_eventType.Unit()}! Congratulations!",
+                allowedMentions: AllowedMentions.All);
+        await FollowupAsync(embed: EmbedGenerator.EventWinner(_eventType, lastActiveEvent.Activity, result));
     }
 
     protected async Task StartEvent(HiscoreField activity, bool isActive = true)
@@ -167,8 +166,8 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         };
 
         componentBuilder.AddRow(new ActionRowBuilder()
-            .WithButton("Register", $"register-for-{eventAbbrev}:{eventId},{threadId}", ButtonStyle.Success)
-            .WithButton("List participants", $"list-participants-{eventAbbrev}:{eventId}", ButtonStyle.Secondary));
+                .WithButton("Register", $"register-for-{eventAbbrev}:{eventId},{threadId}", ButtonStyle.Success)
+                .WithButton("List participants", $"list-participants-{eventAbbrev}:{eventId}", ButtonStyle.Secondary));
         await DeferAsync();
         await FollowupAsync(embed: _eventType switch
         {
@@ -184,11 +183,11 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
     {
         var channel = Context.Channel as ITextChannel;
         var newThread = await channel.CreateThreadAsync(
-            name: $"{type.GetDisplayName()} - {activity.GetDisplayName()}",
-            autoArchiveDuration: ThreadArchiveDuration.OneWeek,
-            invitable: false,
-            type: ThreadType.PublicThread
-        );
+                name: $"{type.GetDisplayName()} - {activity.GetDisplayName()}",
+                autoArchiveDuration: ThreadArchiveDuration.OneWeek,
+                invitable: false,
+                type: ThreadType.PublicThread
+                );
         return newThread.Id;
     }
 
@@ -196,7 +195,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
     {
         await using var db = await _contextFactory.CreateDbContextAsync();
         await DeferAsync(ephemeral: true);
-        
+
         var @event = db.TrackableEvents.Include(x => x.Participants).FirstOrDefault(x => x.Id == eventId);
 
         if (@event == null)
@@ -218,7 +217,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         }
 
         var msg = @event.Participants.Aggregate("The following people are participating: \n\n",
-            (current, accountLink) => current + "* " + (accountLink.RunescapeName + "\n"));
+                (current, accountLink) => current + "* " + (accountLink.RunescapeName + "\n"));
 
         await FollowupAsync(msg, ephemeral: true);
     }
@@ -236,7 +235,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         foreach (var @event in events.Where(x => x.EventParticipations.Any()))
         {
             var winner = @event.EventParticipations.ToList().Select(x => new
-                { x.AccountLink.RunescapeName, Progress = x.EndPoint - x.StartingPoint }).MaxBy(x => x.Progress);
+            { x.AccountLink.RunescapeName, Progress = x.EndPoint - x.StartingPoint }).MaxBy(x => x.Progress);
             if (winner == null) continue;
             playerScores.TryAdd(winner.RunescapeName, 0);
             playerScores[winner.RunescapeName]++;
@@ -252,7 +251,7 @@ public abstract class TrackableEventModuleBase : InteractionModuleBase<SocketInt
         var resultMsg = $"All time leaderboard for {_eventType.GetDisplayName()}\n\n```";
         resultMsg = playerScores.Select(x => new { Player = x.Key, Wins = x.Value }).OrderByDescending(x => x.Wins)
             .Aggregate(resultMsg,
-                (current, playerWins) =>
+                    (current, playerWins) =>
                     current +
                     $"{++i}. {playerWins.Player} - {playerWins.Wins} win{(playerWins.Wins == 1 ? string.Empty : 's')}\n");
         resultMsg += "```";

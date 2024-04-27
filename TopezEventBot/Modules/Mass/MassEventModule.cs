@@ -13,7 +13,7 @@ public class MassEventModule : SchedulableEventModuleBase
     public MassEventModule(IDbContextFactory<TopezContext> contextFactory) : base(contextFactory, SchedulableEventType.Mass)
     {
     }
-    
+
     [SlashCommand("schedule", "Schedule a new mass event")]
     [RequireRole("Coordinator")]
     public async Task ScheduleEvent(MassEventActivityChoice activity, string location, DateTime time)
@@ -31,7 +31,7 @@ public class MassEventModule : SchedulableEventModuleBase
     {
         await ListEventParticipants(eventId);
     }
-    
+
     [ComponentInteraction("register-for-mass:*", ignoreGroupNames: true)]
     public override async Task HandleRegistration(long eventId)
     {
