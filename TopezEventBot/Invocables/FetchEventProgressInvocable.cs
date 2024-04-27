@@ -5,6 +5,7 @@ using ScottPlot;
 using TopezEventBot.Data.Context;
 using TopezEventBot.Data.Entities;
 using TopezEventBot.Http;
+using TopezEventBot.Util;
 
 namespace TopezEventBot.Invocables;
 
@@ -39,8 +40,8 @@ public class FetchEventProgressInvocable : IInvocable
         var fetchTime = DateTime.Now;
         foreach (var activeEvent in activeEvents)
         {
-            ScottPlot.Plot myPlot = new();
-            myPlot.HideLegend();
+            ScottPlot.Plot plot = new();
+            plot.HideLegend();
 
             var eventProgress = new List<ParticipantProgress>();
 
@@ -61,31 +62,49 @@ public class FetchEventProgressInvocable : IInvocable
             }
             _db.Update(activeEvent);
 
-            var result = activeEvent.EventParticipations.Select((p, i) => new
-            {
-                Index = i,
-                p.AccountLink.RunescapeName,
-                Progress = p.EndPoint - p.StartingPoint
-            }).OrderByDescending(p => p.Progress);
+            var ticks = new Tick[eventProgress.Count()];
+            plot.Add.Palette = new ScottPlot.Palettes.Nord();
 
-            var ticks = new Tick[result.Count()];
-            var idx = 0;
-            foreach (var participation in result)
+            foreach (var tuple in eventProgress.OrderByDescending(p => p.Progress).Select((participation, index) => (participation, index)))
             {
-                myPlot.Add.Bar(position: participation.Index + 1, value: participation.Progress);
-                ticks[idx++] = new Tick(participation.Index + 1, participation.RunescapeName);
+                plot.Add.Bar(position: tuple.index + 1, value: tuple.participation.Progress);
+                ticks[tuple.index] = new Tick(tuple.index + 1, tuple.participation.RunescapeName);
             }
 
-            myPlot.Axes.Bottom.TickGenerator = new ScottPlot.TickGenerators.NumericManual(ticks);
-            myPlot.Axes.Bottom.MajorTickStyle.Length = 0;
-            myPlot.HideGrid();
+            plot.Axes.Left.Label.Text = activeEvent.Type switch
+            {
+                TrackableEventType.BossOfTheWeek => "Kills",
+                TrackableEventType.SkillOfTheWeek => "Experience",
+                _ => throw new ArgumentOutOfRangeException(nameof(activeEvent.Type), activeEvent.Type, null)
+            };
+
+            // plot.FigureBackground.Color = Color.FromHex("#181818");
+            // plot.DataBackground.Color = Color.FromHex("#1f1f1f");
+            plot.DataBackground.Color = Colors.Black.WithAlpha(.5);
+            plot.FigureBackground.Image = new(Convert.FromBase64String(Constants.image));
+
+            // change axis and grid colors
+            plot.Axes.Color(Color.FromHex("#d7d7d7"));
+            plot.Grid.MajorLineColor = Color.FromHex("#404040");
+
+            // change legend colors
+            plot.Legend.BackgroundColor = Color.FromHex("#404040");
+            plot.Legend.FontColor = Color.FromHex("#d7d7d7");
+            plot.Legend.OutlineColor = Color.FromHex("#d7d7d7");
+
+            plot.Axes.Left.Label.ForeColor = Colors.Magenta;
+            plot.Axes.Left.Label.Italic = true;
+
+            plot.Axes.Bottom.TickGenerator = new ScottPlot.TickGenerators.NumericManual(ticks);
+            plot.Axes.Bottom.MajorTickStyle.Length = 0;
+            plot.HideGrid();
 
             // tell the plot to autoscale with no padding beneath the bars
-            myPlot.Axes.Margins(bottom: 0);
+            plot.Axes.Margins(bottom: 0);
 
             // display the legend in a LegendPanel outside the plot
             _logger.LogCritical("saving demo.png");
-            myPlot.SavePng("demo.png", 400, 300);
+            plot.SavePng("demo.png", 400, 300);
         }
 
         await _db.SaveChangesAsync();
