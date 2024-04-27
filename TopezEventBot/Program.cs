@@ -53,7 +53,7 @@ host.Services.UseScheduler(scheduler =>
         .EveryMinute();
 
     scheduler.Schedule<FetchEventProgressInvocable>()
-        .EveryMinute().Once();
+        .EveryMinute();
 });
 
 await UpdateDatabase(host);
