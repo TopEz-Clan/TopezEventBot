@@ -15,22 +15,22 @@ public static class HiscoreFieldExtensions
         var lookupData = GetAttr(field);
         return lookupData != null ? lookupData.BannerUrl : Constants.InformationalFooterLogoUrl;
     }
-    
+
     public static string GetThumbnailUrl(this HiscoreField field)
     {
         var lookupData = GetAttr(field);
         return lookupData != null ? lookupData.ThumbnailUrl : Constants.TopezLogoUrl;
     }
-    
+
     private static LookupAttribute? GetAttr(HiscoreField f)
     {
         return Attribute.GetCustomAttribute(ForValue(f), typeof(LookupAttribute)) as LookupAttribute;
     }
-    
+
     private static MemberInfo? ForValue(HiscoreField field)
     {
         return typeof(HiscoreField).GetField(Enum.GetName(typeof(HiscoreField), field) ?? string.Empty);
     }
- 
-    
+
+
 }

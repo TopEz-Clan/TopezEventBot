@@ -6,7 +6,8 @@ namespace TopezEventBot.Data.Extensions;
 
 public static class TopezContextExtensions
 {
-    public static async Task<long> CreateEvent(this TopezContext ctx, TrackableEventType type, HiscoreField activity, bool isActive) {
+    public static async Task<long> CreateEvent(this TopezContext ctx, TrackableEventType type, HiscoreField activity, bool isActive)
+    {
         var @event = new TrackableEvent()
         {
             Type = type,
