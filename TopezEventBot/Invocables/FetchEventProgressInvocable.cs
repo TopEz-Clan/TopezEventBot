@@ -104,7 +104,8 @@ public class FetchEventProgressInvocable : IInvocable
 
             // display the legend in a LegendPanel outside the plot
             _logger.LogCritical("saving demo.png");
-            plot.SavePng("demo.png", 400, 300);
+            var tempFile = Path.GetTempFileName() + Guid.NewGuid() + ".png";
+            plot.SavePng(tempFile, 400, 300);
         }
 
         await _db.SaveChangesAsync();
