@@ -30,14 +30,17 @@ public class BarPlotBuilder : IBarPlotBuilder
         _plot.Legend.FontColor = Color.FromHex("#d7d7d7");
         _plot.Legend.OutlineColor = Color.FromHex("#d7d7d7");
 
-        _plot.Axes.Left.Label.ForeColor = Colors.Magenta;
+        _plot.Axes.Left.Label.ForeColor = Colors.Yellow;
+        _plot.Axes.Left.Label.FontSize = 32;
         _plot.Axes.Left.Label.Italic = true;
+        _plot.Axes.Left.Label.FontName = "RuneScape Bold 12";
 
-        _plot.FigureBackground.Image = new(Convert.FromBase64String(Constants.image));
+        _plot.FigureBackground.Color = Colors.DarkGray;
+        // _plot.FigureBackground.Image = new(Convert.FromBase64String(Constants.image));
         _plot.HideLegend();
 
         // tell the plot to autoscale with no padding beneath the bars
-        _plot.Axes.Margins(bottom: 0);
+        // _plot.Axes.Margins(bottom: 0);
     }
 
     public IBarPlotBuilder WithBars(IEnumerable<ParticipantProgress> data)

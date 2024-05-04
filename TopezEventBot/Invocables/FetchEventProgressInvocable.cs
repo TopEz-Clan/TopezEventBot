@@ -59,14 +59,16 @@ public class FetchEventProgressInvocable : IInvocable
             }
             _db.Update(activeEvent);
 
+            var tempFile = Path.GetTempFileName() + Guid.NewGuid() + ".png";
+
             var plot = new BarPlotBuilder()
                 .WithBars(eventProgress)
-                .WithImage(new(Convert.FromBase64String(Constants.image)))
+                // .WithImage(new(Convert.FromBase64String(Constants.image)))
                 .ForEvent(activeEvent)
-                .Build();
+                .Build()
+                .SavePng(tempFile, 1600, 1200);
+
             _logger.LogCritical("saving demo.png");
-            var tempFile = Path.GetTempFileName() + Guid.NewGuid() + ".png";
-            plot.SavePng(tempFile, 400, 300);
         }
 
         await _db.SaveChangesAsync();
